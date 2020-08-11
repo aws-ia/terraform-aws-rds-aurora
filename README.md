@@ -1,1 +1,1 @@
-# tf-quickstart-amazon-aurora-postgress
+# tf-quickstart-amazon-aurora-postgresql
