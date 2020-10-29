@@ -1,29 +1,18 @@
 # tf-quickstart-amazon-aurora-postgresql
-# Step 1
-## pre-reqs:
+To deploy, do the following:
+1. Sign up for [Terraform Cloud](https://app.terraform.io/signup/account). (There is a free tier available.)
+2. Clone the **aws-quickstart/terraform-aws-quickstart-aurora_postgresql** directory.
+3. In the main directory (**aws-quickstart/terraform-aws-quickstart-aurora_postgresql**), run the following commands:
 
-To deploy this quickstart you need to
-1. git clone this directory
-2. signup for Terraform Cloud (there is a free tier)
+        terraform login
+        export TERRAFORM_CONFIG="$HOME/.terraform.d/credentials.tfrc.json"
+        terrafrom init
+        terrafrom apply
 
-# Step 2
-
-in the main directory perform the following commands:
-
-terraform login
-
-export TERRAFORM_CONFIG="$HOME/.terraform.d/credentials.tfrc.json"
-
-terrafrom init
-
-terrafrom apply
-
-# Step 3
-
-# Run these commands in order:
-
- 1. cd ./setup_env
- 2. terraform init
- 3. terraform apply
- 
- Then follow the command prompts
+4. Run the following commands in the order they appear below:
+   
+        cd ./setup_env
+        terraform init
+        terraform apply
+    
+5. Follow the command prompts.
