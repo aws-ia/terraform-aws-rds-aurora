@@ -7,12 +7,10 @@
 ######################################
 terraform {
   required_version = ">= 0.13"
-
-  backend "remote" {}
 }
 
 provider "aws" {
-  region = "us-east-2"
+  region = var.region
 }
 
 resource "random_pet" "name" {
@@ -26,7 +24,7 @@ resource "random_pet" "name" {
 
 module "quickstart_vpc" {
   source            = "aws-quickstart/vpc/aws"
-  region            = "us-east-2"
+  region            = var.region
   name              = random_pet.name.id
   cidr              = "10.0.0.0/16"
   public_subnets    = ["10.0.128.0/20", "10.0.144.0/20", "10.0.160.0/20", "10.0.176.0/20", "10.0.240.0/22", "10.0.244.0/22"]
@@ -40,6 +38,6 @@ module "quickstart_vpc" {
 module "aurora" {
   depends_on = [module.quickstart_vpc]
   source     = "../../modules/aurora"
-  region     = "us-east-2"
+  region     = var.region
   name       = random_pet.name.id
 }

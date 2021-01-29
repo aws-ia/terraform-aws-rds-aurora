@@ -1,7 +1,6 @@
 variable "region" {
   type        = string
   description = "The name of the region you wish to deploy into"
-  default     = "us-east-1"
 }
 
 variable "name" {
@@ -13,7 +12,7 @@ variable "name" {
 variable "vpc_id" {
   type        = string
   description = "VPC id"
-  default     =""
+  default     = ""
 }
 
 # variable "avaliability_zones" {
@@ -33,15 +32,15 @@ variable "allowed_security_groups" {
 }
 
 variable "instance_class" {
-  type = string
+  type        = string
   description = "Instance type to use at replica instance"
   default     = "db.r4.large"
 }
 
 variable "skip_final_snapshot" {
-  type = string
+  type        = string
   description = "skip creating a final snapshot before deleting the DB"
-  default       = true
+  default     = true
 }
 
 variable "database_name" {
@@ -119,7 +118,7 @@ variable "replica_scale_enabled" {
 variable "tags" {
   description = "A map of tags to add to all resources."
   type        = map(string)
-  default     = {
+  default = {
     Name = "quickstart-aurora-db"
-    }
+  }
 }
