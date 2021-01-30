@@ -41,7 +41,7 @@ module "aurora_vpc" {
 
 module "aurora" {
   depends_on = [module.aurora_vpc]
-  source     = "../../modules/aurora2"
+  source     = "../../modules/aurora"
   region     = var.region
   name       = local.name
   vpc_id     = module.aurora_vpc.vpc_id

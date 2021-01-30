@@ -12,11 +12,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-southeast-2"
+  region = var.region
 }
 
 resource "random_pet" "name" {
-  prefix = "aws-quickstart"
+  prefix = "tfm-aws"
   length = 1
 }
 
@@ -25,8 +25,8 @@ resource "random_pet" "name" {
 ######################################
 
 module "aurora" {
-  source = "../modules/aurora2"
-  region = "ap-southeast-2"
+  source = "../../modules/aurora"
+  region = var.region
   name   = random_pet.name.id
   vpc_id = "" #add the VPC ID you wish the database to be built in.
 }
