@@ -1,21 +1,45 @@
 # terraform-aws-rds-aurora
 Authors: David Wright (dwright@hashicorp.com) and Tony Vattahil (tonynv@amazon.com)
+- Clone this **aws-quickstart/terraform-aws-rds_aurora** directory.
+# Terraform AWS RDS Aurora
 
+## Install Terraform
 To deploy this module, do the following:
-1. Sign up for [Terraform Cloud](https://app.terraform.io/signup/account). (There is a free tier available.)
-2. Clone this **aws-quickstart/terraform-aws-aurora_postresql** directory.
+Install Terraform. (See [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) for a tutorial.) 
 
-        git clone https://github.com/aws-quickstart/terraform-aws-aurora_postresql.git
+## Configure AWS CLI 
+> ~/.aws/credentials (Linux & Mac)
 
-3. Change directory to the root directory.
+```
+[default]
+aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key=wJalrXUtnSAMPLESECRETKEY
+```
+See [Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for more info
 
-        cd terraform-aws-aurora_postresql
+## Clone the repo (requires git client)
 
-4. Run `terraform login` to ensure you are authenticated into Terraform Cloud.
-5. Run `export TERRAFORM_CONFIG="$HOME/.terraform.d/credentials.tfrc.json"`.
-6. Change directory by running `cd ./setup_env`.
-7. Run `terraform init`.
-8. Run `terraform apply`.
-9. To deploy a VPC, change directory by running `cd ../deploy_new_vpc`.
-10. Run `terraform init`.
-11. Run `terraform apply`.
+Clone the **aws-quickstart/terraform-aws-rds_aurora** repository.
+
+`git clone https://github.com/aws-quickstart/terraform-aws-rds_aurora`
+
+Change directory to the root directory.
+
+`cd terraform-aws-rds_aurora/`
+
+Change to deploy directory
+
+`cd deploy/new_vpc` or `cd deploy/existing_vpc`
+
+### Local execution
+
+Initialize terraform module
+
+`terraform init`
+
+Run terraform apply
+
+`terraform apply` 
+
+### Remote execution using Terraform Cloud 
+@TODO Insert link to Terraform Cloud Deployment walk through
