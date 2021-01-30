@@ -24,22 +24,11 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-data "aws_vpc" "vpc" {
-  filter {
-    name   = "tag:Name"
-    values = ["${var.name}_vpc"]
-  }
-}
-
 data "aws_subnet_ids" "private" {
-  vpc_id = data.aws_vpc.vpc.id
-filter {
-    name   = "tag:Name"
-    values = ["${var.name}_private_subnets_A"] 
-  }
+  vpc_id = var.vpc_id
 }
 
-resource "aws_db_subnet_group" "private" {
+resource "aws_db_subnet_group" "private-2" {
   name       = "${var.name}-main"
   subnet_ids = data.aws_subnet_ids.private.ids
 
@@ -61,7 +50,7 @@ resource "aws_rds_cluster" "postgresql" {
   backup_retention_period = var.backup_retention_period
   preferred_backup_window = var.preferred_backup_window
   engine_version                      = var.engine_version
-  db_subnet_group_name            = aws_db_subnet_group.private.name
+  db_subnet_group_name            = aws_db_subnet_group.private-2.name
   port                                = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
   storage_encrypted                   = var.storage_encrypted
   skip_final_snapshot                 = var.skip_final_snapshot
@@ -76,7 +65,7 @@ resource "aws_rds_cluster_instance" "postgresql" {
   engine_version                  = aws_rds_cluster.postgresql.engine_version
   auto_minor_version_upgrade      = var.auto_minor_version_upgrade
   instance_class                  = var.instance_class
-  db_subnet_group_name            = aws_db_subnet_group.private.name
+  db_subnet_group_name            = aws_db_subnet_group.private-2.name
   tags = var.tags
 }
 
@@ -85,7 +74,7 @@ resource "aws_sns_topic" "default" {
 }
 
 resource "aws_db_event_subscription" "default" {
-  name      = "rds-event-sub"
+  name      = "${var.name}-rds-event-sub"
   sns_topic = aws_sns_topic.default.arn
 
   source_type = "db-cluster"
