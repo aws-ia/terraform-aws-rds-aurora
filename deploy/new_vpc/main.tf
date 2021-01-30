@@ -44,5 +44,5 @@ module "aurora" {
   source     = "../../modules/aurora2"
   region     = var.region
   name       = local.name
-  vpc_id     = module.aurora-vpc.vpc_id
+  vpc_id     = module.aurora_vpc.vpc_id
 }
