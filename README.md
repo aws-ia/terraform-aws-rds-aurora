@@ -1,45 +1,29 @@
-# terraform-aws-rds-aurora
+# Terraform Amazon Aurora
 Authors: David Wright (dwright@hashicorp.com) and Tony Vattahil (tonynv@amazon.com)
-- Clone this **aws-quickstart/terraform-aws-rds_aurora** directory.
-# Terraform AWS RDS Aurora
 
-## Install Terraform
-To deploy this module, do the following:
-Install Terraform. (See [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) for a tutorial.) 
+To deploy the Terraform Amazon Aurora module, do the following:
 
-## Configure AWS CLI 
-> ~/.aws/credentials (Linux & Mac)
+1. Install Terraform. For instructions and a video tutorial, see [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli). 
+2. Configure the AWS Command Line Interface (CLI). For more information, see [Configuring the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
+3. If you don't have git installed, [install git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). 
+4. Clone this **aws-quickstart/terraform-aws-rds_aurora** repository using the following command:
 
-```
-[default]
-aws_access_key_id=AKIAIOSFODNN7EXAMPLE
-aws_secret_access_key=wJalrXUtnSAMPLESECRETKEY
-```
-See [Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for more info
+   `git clone https://github.com/aws-quickstart/terraform-aws-rds_aurora`
 
-## Clone the repo (requires git client)
+5. Change directory to the root repository directory.
 
-Clone the **aws-quickstart/terraform-aws-rds_aurora** repository.
+   `cd terraform-aws-rds_aurora/`
 
-`git clone https://github.com/aws-quickstart/terraform-aws-rds_aurora`
+6. Change to the deploy directory.
 
-Change directory to the root directory.
+   - For a new virtual private cloud (VPC), use `cd deploy/new_vpc`. 
 
-`cd terraform-aws-rds_aurora/`
+   - For an existing VPC, use `cd deploy/existing_vpc`.
 
-Change to deploy directory
+7. To perform operations locally, do the following: 
+   
+   a. Initialize the deploy directory. Run `terraform init`.
 
-`cd deploy/new_vpc` or `cd deploy/existing_vpc`
-
-### Local execution
-
-Initialize terraform module
-
-`terraform init`
-
-Run terraform apply
-
-`terraform apply` 
-
-### Remote execution using Terraform Cloud 
-@TODO Insert link to Terraform Cloud Deployment walk through
+   b. Start a Terraform run using the configuration files in your deploy directory. Run `terraform apply`.
+   
+8. To perform remotely using Terraform Cloud, see [Terraform Runs and Remote Operations](https://www.terraform.io/docs/cloud/run/index.html).
