@@ -8,17 +8,17 @@ To deploy the Terraform Amazon Aurora module, do the following:
 3. If you don't have git installed, [install git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). 
 4. Clone this **aws-quickstart/terraform-aws-rds_aurora** repository using the following command:
 
-`git clone https://github.com/aws-quickstart/terraform-aws-rds_aurora`
+   `git clone https://github.com/aws-quickstart/terraform-aws-rds_aurora`
 
 5. Change directory to the root repository directory.
 
-`cd terraform-aws-rds_aurora/`
+   `cd terraform-aws-rds_aurora/`
 
 6. Change to the deploy directory.
 
-- For a new virtual private cloud (VPC), use `cd deploy/new_vpc`. 
+   - For a new virtual private cloud (VPC), use `cd deploy/new_vpc`. 
 
-- For an existing VPC, use `cd deploy/existing_vpc`.
+   - For an existing VPC, use `cd deploy/existing_vpc`.
 
 7. To perform local execution, do the following: 
    
