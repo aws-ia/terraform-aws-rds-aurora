@@ -26,4 +26,4 @@ To deploy the Terraform Amazon Aurora module, do the following:
 
    b. Start a Terraform run using the configuration files in your deploy directory. Run `terraform apply`.
    
-8. To perform remotely using Terraform Cloud, see ....
+8. To perform remotely using Terraform Cloud, see [Terraform Runs and Remote Operations](https://www.terraform.io/docs/cloud/run/index.html).
