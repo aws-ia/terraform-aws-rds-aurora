@@ -14,11 +14,11 @@ To deploy the Terraform Amazon Aurora module, do the following:
 
 `cd terraform-aws-rds_aurora/`
 
-6. Change to deploy directory.
+6. Change to the deploy directory.
 
-- `cd deploy/new_vpc` 
+- For a new virtual private cloud (VPC), use `cd deploy/new_vpc`. 
 
-- `cd deploy/existing_vpc`
+- For an existing VPC, use `cd deploy/existing_vpc`.
 
 7. To perform local execution, do the following: 
    
