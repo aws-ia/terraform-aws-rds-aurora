@@ -15,7 +15,7 @@ aws_secret_access_key=wJalrXUtnSAMPLESECRETKEY
 ```
 See [Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for more info
 
-3. Clone this **aws-quickstart/terraform-aws-rds_aurora** repository. (requires git client)
+3. Clone this **aws-quickstart/terraform-aws-rds_aurora** repository. Requires [git installation](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git).
 
 `git clone https://github.com/aws-quickstart/terraform-aws-rds_aurora`
 
