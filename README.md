@@ -18,13 +18,11 @@ To deploy the Terraform Amazon Aurora module, do the following:
 
 `cd deploy/new_vpc` or `cd deploy/existing_vpc`
 
-### Local execution
-
-Initialize terraform module
+7. From the deploy directory, initialize the module.
 
 `terraform init`
 
-Run terraform apply
+8. From the deploy directory, run `terraform apply`.
 
 `terraform apply` 
 
