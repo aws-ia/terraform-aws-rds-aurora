@@ -1,13 +1,11 @@
-# terraform-aws-rds-aurora
+# Terraform Amazon Aurora
 Authors: David Wright (dwright@hashicorp.com) and Tony Vattahil (tonynv@amazon.com)
-- Clone this **aws-quickstart/terraform-aws-rds_aurora** directory.
-# Terraform AWS RDS Aurora
 
-## Install Terraform
-To deploy this module, do the following:
-Install Terraform. (See [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) for a tutorial.) 
+To deploy the Terraform Amazon Aurora module, do the following:
 
-## Configure AWS CLI 
+1. Install Terraform. See [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) for instructions and a video tutorial. 
+
+2. Configure AWS CLI 
 > ~/.aws/credentials (Linux & Mac)
 
 ```
@@ -17,7 +15,7 @@ aws_secret_access_key=wJalrXUtnSAMPLESECRETKEY
 ```
 See [Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for more info
 
-## Clone the repo (requires git client)
+## 3. Clone this repository (requires git client)
 
 Clone the **aws-quickstart/terraform-aws-rds_aurora** repository.
 
