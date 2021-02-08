@@ -4,8 +4,7 @@ Authors: David Wright (dwright@hashicorp.com) and Tony Vattahil (tonynv@amazon.c
 To deploy the Terraform Amazon Aurora module, do the following:
 
 1. Install Terraform. See [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli) for instructions and a video tutorial. 
-
-2. Configure the AWS Command Line Interface (CLI).
+2. Configure the AWS Command Line Interface (CLI) using the following command:
 > ~/.aws/credentials (Linux & Mac)
 
 ```
@@ -13,7 +12,7 @@ To deploy the Terraform Amazon Aurora module, do the following:
 aws_access_key_id=AKIAIOSFODNN7EXAMPLE
 aws_secret_access_key=wJalrXUtnSAMPLESECRETKEY
 ```
-See [Guide](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for more info
+For more information, see [Named Profiles](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html).
 
 3. If you don't have git installed, [install git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). 
 4. Clone this **aws-quickstart/terraform-aws-rds_aurora** repository.
