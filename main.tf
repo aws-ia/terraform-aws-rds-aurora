@@ -25,7 +25,7 @@ resource "random_pet" "name" {
 ######################################
 
 module "aurora" {
-  source = "../../modules/aurora"
+  source = "./modules/aurora"
   region = var.region
   name   = random_pet.name.id
   vpc_id = "" #add the VPC ID you wish the database to be built in.

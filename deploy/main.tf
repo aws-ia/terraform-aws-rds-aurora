@@ -7,11 +7,14 @@
 ######################################
 terraform {
   required_version = ">= 0.13"
+  backend "remote" {}
 }
+
 
 provider "aws" {
   region = var.region
 }
+
 
 resource "random_pet" "name" {
   prefix = "tfm-aws"
@@ -41,7 +44,7 @@ module "aurora_vpc" {
 
 module "aurora" {
   depends_on = [module.aurora_vpc]
-  source     = "../../modules/aurora"
+  source     = "../modules/aurora"
   region     = var.region
   name       = local.name
   vpc_id     = module.aurora_vpc.vpc_id
