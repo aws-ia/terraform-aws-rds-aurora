@@ -16,9 +16,9 @@ To deploy the Terraform Amazon Aurora module, do the following:
 
 6. Change to the deploy directory.
 
-   - For a new virtual private cloud (VPC), use `cd deploy/new_vpc`. 
+   - For a new virtual private cloud (VPC), use `cd deploy`. 
 
-   - For an existing VPC, use `cd deploy/existing_vpc`.
+   Note: For an existing VPC, use pass in you VPCID directly into module.
 
 7. To perform operations locally, do the following: 
    
