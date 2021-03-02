@@ -25,8 +25,23 @@ resource "random_pet" "name" {
 ######################################
 
 module "aurora" {
-  source = "./modules/aurora"
-  region = var.region
-  name   = random_pet.name.id
-  vpc_id = "" #add the VPC ID you wish the database to be built in.
+  source                     = "./modules/aurora"
+  region                     = var.region
+  name                       = "${random_pet.name.id}-main"
+  vpc_id                     = "" #add the VPC ID you wish the database to be built in.
+  cluster_identifier         = var.name
+  engine                     = var.engine
+  database_name              = var.database_name
+  master_username            = var.username
+  master_password            = var.password == "" ? random_password.master_password.result : var.password
+  backup_retention_period    = var.backup_retention_period
+  preferred_backup_window    = var.preferred_backup_window
+  engine_version             = var.engine_version
+  port                       = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
+  storage_encrypted          = var.storage_encrypted
+  skip_final_snapshot        = var.skip_final_snapshot
+  tags                       = var.tags
+  identifier                 = "${var.name}-${count.index + 1}"
+  auto_minor_version_upgrade = var.auto_minor_version_upgrade
+  instance_class             = var.instance_class
 }

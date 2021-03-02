@@ -1,29 +1,17 @@
 variable "region" {
   type        = string
   description = "The name of the region you wish to deploy into"
-  default     = "us-east-1"
 }
 
 variable "name" {
   description = "Name given resources"
   type        = string
-  default     = "aws-quickstart"
 }
 
 variable "vpc_id" {
   type        = string
   description = "VPC id"
 }
-
-# variable "avaliability_zones" {
-#     type = string
-#     description = "which AZ to deploy the DB in"
-# }
-
-# variable "replica_count" {
-#   description = "Number of reader nodes to create.  If `replica_scale_enable` is `true`, the value of `replica_scale_min` is used instead."
-#   default     = 1
-# }
 
 variable "allowed_security_groups" {
   description = "A list of Security Group ID's to allow access to."
