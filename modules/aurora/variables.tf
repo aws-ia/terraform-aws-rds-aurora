@@ -1,30 +1,19 @@
 variable "region" {
   type        = string
   description = "The name of the region you wish to deploy into"
-  default     = "us-east-1"
 }
 
 variable "name" {
   description = "Name given resources"
   type        = string
-  default     = "aws-quickstart"
+  default     = "tfm-aws"
 }
 
 variable "vpc_id" {
   type        = string
   description = "VPC id"
-  default     =""
+  default     = ""
 }
-
-# variable "avaliability_zones" {
-#     type = string
-#     description = "which AZ to deploy the DB in"
-# }
-
-# variable "replica_count" {
-#   description = "Number of reader nodes to create.  If `replica_scale_enable` is `true`, the value of `replica_scale_min` is used instead."
-#   default     = 1
-# }
 
 variable "allowed_security_groups" {
   description = "A list of Security Group ID's to allow access to."
@@ -33,15 +22,15 @@ variable "allowed_security_groups" {
 }
 
 variable "instance_class" {
-  type = string
+  type        = string
   description = "Instance type to use at replica instance"
   default     = "db.r4.large"
 }
 
 variable "skip_final_snapshot" {
-  type = string
+  type        = string
   description = "skip creating a final snapshot before deleting the DB"
-  default       = true
+  default     = true
 }
 
 variable "database_name" {
@@ -119,7 +108,7 @@ variable "replica_scale_enabled" {
 variable "tags" {
   description = "A map of tags to add to all resources."
   type        = map(string)
-  default     = {
-    Name = "quickstart-aurora-db"
-    }
+  default = {
+    Name = "tfm-aws-aurora-db"
+  }
 }
