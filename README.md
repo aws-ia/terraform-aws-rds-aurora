@@ -29,7 +29,7 @@ export TERRAFORM_CONFIG="$HOME/.terraform.d/credentials.tfrc.json"
 
 8. To perform operations locally, do the following: 
    
-   a. Initialize the deploy directory. Run `terraform init`.
+   a. Initialize the deploy directory. Run `terraform init`.  
    b. Start a Terraform run using the configuration files in your deploy directory. 
    Run `terraform apply` or Run `terraform apply  -var-file="$HOME/.aws/terraform.tfvars"`
  
