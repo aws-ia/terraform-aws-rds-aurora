@@ -31,6 +31,7 @@ locals {
 
 module "aurora_vpc" {
   source            = "aws-quickstart/vpc/aws"
+  version           = "0.0.6"
   region            = var.region
   name              = local.name
   cidr              = "10.0.0.0/16"
