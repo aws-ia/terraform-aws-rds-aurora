@@ -16,6 +16,7 @@ module "tfc_workspace" {
   tfe_workspace         = var.tfe_workspace
   AWS_ACCESS_KEY_ID     = var.AWS_ACCESS_KEY_ID
   AWS_SECRET_ACCESS_KEY = var.AWS_SECRET_ACCESS_KEY
+  AWS_SESSION_TOKEN     = var.AWS_SESSION_TOKEN
   working_directory     = var.working_directory
   region                = var.region
 }
