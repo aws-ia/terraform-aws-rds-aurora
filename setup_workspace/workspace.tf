@@ -50,7 +50,10 @@ output "user_instructions" {
 # Configure your tfvars file
   AWS_SECRET_ACCESS_KEY = "*****************"
   AWS_ACCESS_KEY_ID     = "*****************"
+  AWS_SESSION_TOKEN     = "*****************"
+  region                = "region override"
 
+#  Note: Use of STS Creds are highly reccommended!
 # !!!!CAUTION!!!!: Make sure your credential are secured ourside version control (and follow secrets mangement bestpractices)
 #   
    terraform apply  -var-file="$HOME/.aws/terraform.tfvars"
