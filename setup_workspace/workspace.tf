@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 0.13.5"
+  required_version = ">= 0.14"
 }
 
 resource "random_pet" "name" {
