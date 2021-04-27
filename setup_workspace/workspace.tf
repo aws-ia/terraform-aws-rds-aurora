@@ -11,6 +11,7 @@ resource "random_pet" "name" {
 
 module "tfc_workspace" {
   source                = "aws-quickstart/tfc_workspace/aws"
+  version               = "0.0.12"
   tfe_email             = var.tfe_email
   tfe_organization      = var.tfe_organization
   tfe_workspace         = var.tfe_workspace
