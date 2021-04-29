@@ -3,32 +3,30 @@ variable "region" {
 }
 variable "namespace" {
   description = "namespace, which could be your organiation name, e.g. amazon"
-  default     = "testns"
+  default     = "aws"
 }
 variable "env" {
   description = "environment, e.g. 'sit', 'uat', 'prod' etc"
-  default     = "testenv"
+  default     = "dev"
 }
 variable "account" {
   description = "account, which could be AWS Account Name or Number"
-  default     = "testacc"
+  default     = "rds-test"
 }
 variable "name" {
-  description = "stack name"
-  default     = "testname"
+  description = "deployment name"
+  default     = "aurora"
 }
 variable "delimiter" {
   description = "delimiter, which could be used between name, namespace and env"
   default     = "-"
 }
 variable "attributes" {
-  #type        = list(string)
   default     = []
   description = "atttributes, which could be used for additional attributes"
 }
 
 variable "tags" {
-  #type        = map(string)
   default     = {}
   description = "tags, which could be used for additional tags"
 }

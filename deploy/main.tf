@@ -23,7 +23,6 @@ module "vpc_label" {
   region    = var.region
   namespace = var.namespace
   env       = var.env
-  #account = var.account_name
   name      = "${var.name}-${random_string.rand4.result}"
   delimiter = var.delimiter
   tags      = tomap({ propogate_at_launch = "true", "terraform" = "true" })
@@ -52,4 +51,5 @@ module "aurora" {
   source     = "../modules/aurora"
   region     = var.region
   vpc_id     = module.aurora_vpc.vpc_id
+  tags       = module.vpc_label.tags
 }
