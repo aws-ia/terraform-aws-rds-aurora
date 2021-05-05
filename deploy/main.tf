@@ -48,7 +48,7 @@ module "aurora_vpc" {
 
 module "aurora" {
   depends_on = [module.aurora_vpc]
-  source     = "../modules/aurora"
+  source     = "../"
   region     = var.region
   vpc_id     = module.aurora_vpc.vpc_id
   tags       = module.vpc_label.tags

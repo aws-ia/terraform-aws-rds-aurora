@@ -3,14 +3,21 @@ variable "region" {
   description = "The name of the region you wish to deploy into"
 }
 
+variable "identifier" {
+  description = "Cluster identifier"
+  type        = string
+  default     = "rds"
+}
 variable "name" {
   description = "Name given resources"
   type        = string
+  default     = "tfm-aws"
 }
 
 variable "vpc_id" {
   type        = string
   description = "VPC id"
+  default     = ""
 }
 
 variable "allowed_security_groups" {
@@ -34,7 +41,7 @@ variable "skip_final_snapshot" {
 variable "database_name" {
   description = "Name for an automatically created database on cluster creation"
   type        = string
-  default     = ""
+  default     = "mydb"
 }
 
 variable "username" {
@@ -86,7 +93,7 @@ variable "storage_encrypted" {
 }
 
 variable "engine" {
-  description = "Aurora database engine type, currently aurora, aurora-mysql or aurora-postgresql"
+  description = "Aurora database engine type, currently aurora, aurora-postgresql"
   type        = string
   default     = "aurora"
 }
