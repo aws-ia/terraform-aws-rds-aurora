@@ -41,7 +41,7 @@ variable "skip_final_snapshot" {
 variable "database_name" {
   description = "Name for an automatically created database on cluster creation"
   type        = string
-  default     = ""
+  default     = "mydb"
 }
 
 variable "username" {
