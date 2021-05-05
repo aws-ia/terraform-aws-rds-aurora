@@ -41,7 +41,7 @@ resource "aws_db_subnet_group" "private-2" {
 # RDS Aurora
 #############
 resource "aws_rds_cluster" "postgresql" {
-  cluster_identifier      = var.name
+  cluster_identifier      = var.identifier
   engine                  = var.engine
   availability_zones      = [data.aws_availability_zones.available.names[0], data.aws_availability_zones.available.names[1]]
   database_name           = var.database_name
@@ -91,13 +91,13 @@ resource "aws_db_event_subscription" "default" {
 }
 
 resource "aws_db_parameter_group" "aurora_db_postgres11_parameter_group" {
-  name        = "${var.name}-quickstart-aurora-db-postgres11-parameter-group"
+  name        = "${var.name}-aurora-db-postgres11-parameter-group"
   family      = "aurora-postgresql11"
-  description = "quickstart-aurora-db-postgres11-parameter-group"
+  description = "aurora-db-postgres11-parameter-group"
 }
 
 resource "aws_rds_cluster_parameter_group" "aurora_cluster_postgres11_parameter_group" {
-  name        = "${var.name}-quickstart-aurora-postgres11-cluster-parameter-group"
+  name        = "${var.name}-aurora-postgres11-cluster-parameter-group"
   family      = "aurora-postgresql11"
-  description = "quickstart-aurora-postgres11-cluster-parameter-group"
+  description = "aurora-postgres11-cluster-parameter-group"
 }

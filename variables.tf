@@ -3,6 +3,11 @@ variable "region" {
   description = "The name of the region you wish to deploy into"
 }
 
+variable "identifier" {
+  description = "Cluster identifier"
+  type        = string
+  default     = "rds"
+}
 variable "name" {
   description = "Name given resources"
   type        = string
@@ -88,7 +93,7 @@ variable "storage_encrypted" {
 }
 
 variable "engine" {
-  description = "Aurora database engine type, currently aurora, aurora-mysql or aurora-postgresql"
+  description = "Aurora database engine type, currently aurora, aurora-postgresql"
   type        = string
   default     = "aurora"
 }
