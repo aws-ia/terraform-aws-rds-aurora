@@ -17,7 +17,6 @@ variable "name" {
 variable "vpc_id" {
   type        = string
   description = "VPC id"
-  default     = ""
 }
 
 variable "allowed_security_groups" {
@@ -53,7 +52,6 @@ variable "username" {
 variable "password" {
   description = "Master DB password"
   type        = string
-  default     = ""
 }
 
 variable "final_snapshot_identifier_prefix" {
