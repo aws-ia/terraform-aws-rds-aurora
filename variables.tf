@@ -6,11 +6,13 @@ variable "region" {
 variable "name" {
   description = "Name given resources"
   type        = string
+  default     = "tfm-aws"
 }
 
 variable "vpc_id" {
   type        = string
   description = "VPC id"
+  default     = ""
 }
 
 variable "allowed_security_groups" {
