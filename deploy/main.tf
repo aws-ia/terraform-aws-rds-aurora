@@ -51,5 +51,6 @@ module "aurora" {
   source     = "../"
   region     = var.region
   vpc_id     = module.aurora_vpc.vpc_id
+  password   = var.password
   tags       = module.vpc_label.tags
 }

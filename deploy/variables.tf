@@ -26,6 +26,10 @@ variable "attributes" {
   description = "atttributes, which could be used for additional attributes"
 }
 
+variable "password" {
+  default     = ""
+  description = "If not password is provided a random password will be generated"
+}
 variable "tags" {
   default     = {}
   description = "tags, which could be used for additional tags"
