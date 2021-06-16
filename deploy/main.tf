@@ -18,8 +18,8 @@ resource "random_string" "rand4" {
 }
 
 module "vpc_label" {
-  source    = "aws-quickstart/label/aws"
-  version   = "0.0.1"
+  source    = "aws-ia/label/aws"
+  version   = "0.0.2"
   region    = var.region
   namespace = var.namespace
   env       = var.env
