@@ -33,8 +33,8 @@ module "vpc_label" {
 ######################################
 
 module "aurora_vpc" {
-  source            = "aws-quickstart/vpc/aws"
-  version           = "0.0.8"
+  source            = "aws-ia/vpc/aws"
+  version           = "0.0.2"
   region            = var.region
   cidr              = "10.0.0.0/16"
   public_subnets    = ["10.0.128.0/20", "10.0.144.0/20", "10.0.160.0/20", "10.0.176.0/20", "10.0.240.0/22", "10.0.244.0/22"]
