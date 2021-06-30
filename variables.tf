@@ -1,22 +1,40 @@
 variable "region" {
   type        = string
-  description = "The name of the region you wish to deploy into"
+  description = "The name of the primary region you wish to deploy into"
+}
+
+variable "sec_region" {
+  type        = string
+  description = "The name of the secondary region you wish to deploy into"
 }
 
 variable "identifier" {
   description = "Cluster identifier"
   type        = string
-  default     = "rds"
-}
-variable "name" {
-  description = "Name given resources"
-  type        = string
-  default     = "tfm-aws"
+  default     = "tfm-aurora"
 }
 
+variable "name" {
+  description = "Prefix for resource names"
+  type        = string
+  default     = "tfm-aurora"
+}
+
+/*
 variable "vpc_id" {
   type        = string
   description = "VPC id"
+}
+*/
+
+variable "Private_subnet_ids_p" {
+  type        = list(string)
+  description = "A list of private subnet IDs in your Primary AWS region VPC"
+}
+
+variable "Private_subnet_ids_s" {
+  type        = list(string)
+  description = "A list of private subnet IDs in your Secondary AWS region VPC"
 }
 
 variable "allowed_security_groups" {
@@ -28,12 +46,13 @@ variable "allowed_security_groups" {
 variable "instance_class" {
   type        = string
   description = "Instance type to use at replica instance"
-  default     = "db.r4.large"
+  default     = "db.r5.large"
 }
 
 variable "skip_final_snapshot" {
   type        = string
   description = "skip creating a final snapshot before deleting the DB"
+  #set the value to false for actual workload
   default     = true
 }
 
@@ -91,19 +110,25 @@ variable "storage_encrypted" {
 }
 
 variable "engine" {
-  description = "Aurora database engine type, currently aurora, aurora-postgresql"
+  description = "Aurora database engine type: aurora (for MySQL 5.6-compatible Aurora), aurora-mysql (for MySQL 5.7-compatible Aurora), aurora-postgresql"
   type        = string
-  default     = "aurora"
+  default     = "aurora-postgresql"
 }
 
 variable "engine_version" {
   description = "Aurora database engine version."
   type        = string
-  default     = "5.6.10a"
+  default     = "12.4"
+}
+
+variable "setup_globaldb" {
+  description = "Setup Aurora Global Database with 1 Primary and 1 X-region Secondary cluster"
+  type        = bool
+  default     = true
 }
 
 variable "replica_scale_enabled" {
-  description = "Whether to enable autoscaling for RDS Aurora (MySQL) read replicas"
+  description = "Whether to enable autoscaling for Aurora read replica auto scaling"
   type        = bool
   default     = false
 }

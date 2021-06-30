@@ -8,15 +8,19 @@ To deploy the Terraform Amazon Aurora module, do the following:
 3. Configure Terraform Cloud API access. Run the following to generate a Terraform Cloud token from the command line interface:
 ```
 terraform login
-Export the TERRAFORM_CONFIG variable
+
+--For Mac/Linux
 export TERRAFORM_CONFIG="$HOME/.terraform.d/credentials.tfrc.json"
+
+--For Windows
+export TERRAFORM_CONFIG="$HOME/AppData/Roaming/terraform.d/credentials.tfrc.json"
 ```
 
 4. Configure the AWS Command Line Interface (AWS CLI). For more information, see [Configuring the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
 5. If you don't have git installed, [install git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). 
-6. Clone this **aws-ia/terraform-aws-rds-aurora** repository using the following command:
+6. Clone this **aws-quickstart/terraform-aws-rds-aurora** repository using the following command:
 
-   `git clone https://github.com/aws-ia/terraform-aws-rds-aurora`
+   `git clone https://github.com/aws-quickstart/terraform-aws-rds-aurora`
 
 7. Change directory to the root repository directory.
 

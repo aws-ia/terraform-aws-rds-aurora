@@ -17,9 +17,13 @@ resource "random_string" "rand4" {
   upper   = false
 }
 
+######################################
+# Generate Tags
+######################################
+
 module "vpc_label" {
-  source    = "aws-ia/label/aws"
-  version   = "0.0.2"
+  source    = "aws-quickstart/label/aws"
+  version   = "0.0.1"
   region    = var.region
   namespace = var.namespace
   env       = var.env
@@ -32,13 +36,26 @@ module "vpc_label" {
 # Create VPC
 ######################################
 
-module "aurora_vpc" {
-  source            = "aws-ia/vpc/aws"
-  version           = "0.0.2"
+module "aurora_vpc_p" {
+  source            = "aws-quickstart/vpc/aws"
+  version           = "0.0.8"
   region            = var.region
-  cidr              = "10.0.0.0/16"
-  public_subnets    = ["10.0.128.0/20", "10.0.144.0/20", "10.0.160.0/20", "10.0.176.0/20", "10.0.240.0/22", "10.0.244.0/22"]
-  private_subnets_A = ["10.0.0.0/19", "10.0.32.0/19", "10.0.64.0/19", "10.0.96.0/19", "10.0.232.0/22", "10.0.236.0/22"]
+  # commented values are hardcoded in AWS quickstart VPC module currently
+  #cidr              = "10.0.0.0/16"
+  #public_subnets    = ["10.0.0.0/20", "10.0.32.0/20", "10.0.64.0/20"]
+  #private_subnets_A = ["10.0.16.0/20", "10.0.48.0/20", "10.0.80.0/20"]
+  tags              = module.vpc_label.tags
+}
+
+module "aurora_vpc_s" {
+  # count           =  var.setup_globaldb ? 1 :0
+  source            = "aws-quickstart/vpc/aws"
+  version           = "0.0.8"
+  region            = var.sec_region
+  #commented values are hardcoded in AWS quickstart VPC module currently
+  #cidr              = "10.0.0.0/16"
+  #public_subnets    = ["10.0.0.0/20", "10.0.32.0/20", "10.0.64.0/20"]
+  #private_subnets_A = ["10.0.16.0/20", "10.0.48.0/20", "10.0.80.0/20"]
   tags              = module.vpc_label.tags
 }
 
@@ -47,10 +64,16 @@ module "aurora_vpc" {
 ######################################
 
 module "aurora" {
-  depends_on = [module.aurora_vpc]
-  source     = "../"
-  region     = var.region
-  vpc_id     = module.aurora_vpc.vpc_id
-  password   = var.password
-  tags       = module.vpc_label.tags
+  #depends_on           = [module.aurora_vpc_p]
+  source                = "../"
+  region                = var.region
+  sec_region            = var.sec_region
+  #vpc_id               = module.aurora_vpc.vpc_id
+  Private_subnet_ids_p  = [module.aurora_vpc_p.PrivateSubnet1AID, module.aurora_vpc_p.PrivateSubnet2AID, module.aurora_vpc_p.PrivateSubnet3AID]
+  Private_subnet_ids_s  = var.setup_globaldb ? [module.aurora_vpc_s.PrivateSubnet1AID, module.aurora_vpc_s.PrivateSubnet2AID, module.aurora_vpc_s.PrivateSubnet3AID] : null
+  engine                = var.engine
+  engine_version        = var.engine_version
+  password              = var.password
+  setup_globaldb        = var.setup_globaldb
+  tags                  = module.vpc_label.tags
 }
