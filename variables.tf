@@ -8,11 +8,6 @@ variable "identifier" {
   type        = string
   default     = "rds"
 }
-variable "name" {
-  description = "Name given resources"
-  type        = string
-  default     = "tfm-aws"
-}
 
 variable "vpc_id" {
   type        = string
@@ -29,6 +24,12 @@ variable "instance_class" {
   type        = string
   description = "Instance type to use at replica instance"
   default     = "db.r4.large"
+}
+
+variable "instance_count" {
+  type        = number
+  description = "Number of instances to create in the cluster"
+  default     = 3
 }
 
 variable "skip_final_snapshot" {
@@ -52,6 +53,7 @@ variable "username" {
 variable "password" {
   description = "Master DB password"
   type        = string
+  default     = ""
 }
 
 variable "final_snapshot_identifier_prefix" {
@@ -60,10 +62,25 @@ variable "final_snapshot_identifier_prefix" {
   default     = "final"
 }
 
+variable "snapshot_identifier" {
+  description = "id of snapshot to restore"
+  default     = ""
+}
+
 variable "backup_retention_period" {
   description = "How long to keep backups for (in days)"
   type        = number
   default     = 7
+}
+
+variable "apply_immediately" {
+  description = "Specifies whether any database modifications are applied immediately, or during the next maintenance window."
+  default     = false
+}
+
+variable "db_cluster_parameter_group_name" {
+  description = "Name of the DB parameter group to associate."
+  default     = ""
 }
 
 variable "preferred_backup_window" {
@@ -90,6 +107,11 @@ variable "storage_encrypted" {
   default     = true
 }
 
+variable "kms_key_id" {
+  description = "KMS Key ID that must be set when storage encrypted = 'false'"
+  default     = ""
+}
+
 variable "engine" {
   description = "Aurora database engine type, currently aurora, aurora-postgresql"
   type        = string
@@ -106,6 +128,26 @@ variable "replica_scale_enabled" {
   description = "Whether to enable autoscaling for RDS Aurora (MySQL) read replicas"
   type        = bool
   default     = false
+}
+
+variable "enable_audit_log" {
+  description = "Enable audit log."
+  default     = false
+}
+
+variable "enable_error_log" {
+  description = "Enable error log."
+  default     = true
+}
+
+variable "enable_general_log" {
+  description = "Enable general log."
+  default     = true
+}
+
+variable "enable_slowquery_log" {
+  description = "Enable slowquery log."
+  default     = true
 }
 
 variable "tags" {
