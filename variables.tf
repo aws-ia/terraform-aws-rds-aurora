@@ -115,10 +115,16 @@ variable "engine" {
   default     = "aurora-postgresql"
 }
 
-variable "engine_version" {
+variable "engine_version_pg" {
   description = "Aurora database engine version."
   type        = string
   default     = "12.4"
+}
+
+variable "engine_version_mysql" {
+  description = "Aurora database engine version."
+  type        = string
+  default     = "5.7.mysql_aurora.2.10.0"
 }
 
 variable "setup_globaldb" {
@@ -139,4 +145,14 @@ variable "tags" {
   default = {
     Name = "tfm-aws-aurora-db"
   }
+}
+
+variable "monitoring_interval" {
+  description = "Enhanced Monitoring interval in seconds"
+  type        = number
+  default     = 1
+  validation {
+    condition     = contains([0, 1, 5, 10, 15, 30, 60], var.monitoring_interval)
+    error_message = "Valid values for var: monitoring_interval are (0, 1, 5, 10, 15, 30, 60)."
+  } 
 }

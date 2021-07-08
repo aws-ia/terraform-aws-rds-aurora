@@ -1,6 +1,6 @@
 ###########
 # Defaults
-##########
+###########
 
 terraform {
   required_version = ">= 0.14"
@@ -17,18 +17,9 @@ provider "aws" {
   region = var.sec_region
 }
 
-######
-# Create Unique password
-######
-
-resource "random_password" "master_password" {
-  length  = 10
-  special = false
-}
-
-######
+#########################
 # Collect data
-######
+#########################
 
 data "aws_availability_zones" "region_p" {
   state     = "available"
@@ -48,8 +39,30 @@ data "aws_subnet_ids" "private" {
 
 data "aws_rds_engine_version" "family" {
   engine    = var.engine
-  version   = var.engine_version
+  version   = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
   provider  = aws.primary
+}
+
+data "aws_iam_policy_document" "monitoring_rds_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["monitoring.rds.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_partition" "current" {}
+
+#########################
+# Create Unique password
+#########################
+
+resource "random_password" "master_password" {
+  length  = 10
+  special = false
 }
 
 ###########
@@ -99,6 +112,18 @@ resource "aws_kms_key" "kms_s" {
   }
 }
 
+###########
+# IAM
+###########
+
+resource "aws_iam_role" "rds_enhanced_monitoring" {
+  description         = "IAM Role for RDS Enhanced monitoring"
+  path                = "/"
+  assume_role_policy  = data.aws_iam_policy_document.monitoring_rds_assume_role.json
+  managed_policy_arns = ["arn:${data.aws_partition.current.partition}:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"]
+  tags                = var.tags
+}
+
 #############
 # RDS Aurora
 #############
@@ -109,7 +134,7 @@ resource "aws_rds_global_cluster" "globaldb" {
   provider                      = aws.primary
   global_cluster_identifier     = "${var.identifier}-globaldb"
   engine                        = var.engine
-  engine_version                = var.engine_version
+  engine_version                = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
   storage_encrypted             = var.storage_encrypted
 }
 
@@ -118,14 +143,14 @@ resource "aws_rds_cluster" "primary" {
   global_cluster_identifier       = var.setup_globaldb ? aws_rds_global_cluster.globaldb[0].id : null
   cluster_identifier              = "${var.identifier}-${var.region}"
   engine                          = var.engine
-  engine_version                  = var.engine_version
+  engine_version                  = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
   availability_zones              = [data.aws_availability_zones.region_p.names[0], data.aws_availability_zones.region_p.names[1], data.aws_availability_zones.region_p.names[2]]
   db_subnet_group_name            = aws_db_subnet_group.private_p.name
   port                            = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
   database_name                   = var.database_name
   master_username                 = var.username
   master_password                 = var.password == "" ? random_password.master_password.result : var.password
-  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.aurora_postgres_cluster_parameter_group_p[0].id
+  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.aurora_cluster_parameter_group_p.id
   backup_retention_period         = var.backup_retention_period
   preferred_backup_window         = var.preferred_backup_window
   storage_encrypted               = var.storage_encrypted
@@ -146,12 +171,14 @@ resource "aws_rds_cluster_instance" "primary" {
   identifier                    = "${var.name}-${var.region}-${count.index + 1}"
   cluster_identifier            = aws_rds_cluster.primary.id
   engine                        = aws_rds_cluster.primary.engine
-  engine_version                = aws_rds_cluster.primary.engine_version
+  engine_version                = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
   auto_minor_version_upgrade    = var.setup_globaldb ? false : var.auto_minor_version_upgrade
   instance_class                = var.instance_class
   db_subnet_group_name          = aws_db_subnet_group.private_p.name
-  db_parameter_group_name       = aws_db_parameter_group.aurora_postgres_db_parameter_group_p[0].id
+  db_parameter_group_name       = aws_db_parameter_group.aurora_db_parameter_group_p.id
   performance_insights_enabled  = true
+  monitoring_interval           = var.monitoring_interval
+  monitoring_role_arn           = aws_iam_role.rds_enhanced_monitoring.arn
   apply_immediately             = true
   tags                          = var.tags
 }
@@ -163,11 +190,11 @@ resource "aws_rds_cluster" "secondary" {
   global_cluster_identifier       = aws_rds_global_cluster.globaldb[0].id
   cluster_identifier              = "${var.identifier}-${var.sec_region}"
   engine                          = var.engine
-  engine_version                  = var.engine_version
+  engine_version                  = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
   availability_zones              = [data.aws_availability_zones.region_s.names[0], data.aws_availability_zones.region_s.names[1], data.aws_availability_zones.region_s.names[2]] 
   db_subnet_group_name            = aws_db_subnet_group.private_s[0].name
   port                            = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
-  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.aurora_postgres_cluster_parameter_group_s[0].id
+  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.aurora_cluster_parameter_group_s[0].id
   backup_retention_period         = var.backup_retention_period
   preferred_backup_window         = var.preferred_backup_window
   source_region                   = var.storage_encrypted ? var.region : null
@@ -192,12 +219,14 @@ resource "aws_rds_cluster_instance" "secondary" {
   identifier                    = "${var.name}-${var.sec_region}-${count.index + 1}"
   cluster_identifier            = aws_rds_cluster.secondary[0].id
   engine                        = var.engine
-  engine_version                = var.engine_version
+  engine_version                = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
   auto_minor_version_upgrade    = false
   instance_class                = var.instance_class
   db_subnet_group_name          = aws_db_subnet_group.private_s[0].name
-  db_parameter_group_name       = aws_db_parameter_group.aurora_postgres_db_parameter_group_s[0].id
+  db_parameter_group_name       = aws_db_parameter_group.aurora_db_parameter_group_s[0].id
   performance_insights_enabled  = true
+  monitoring_interval           = var.monitoring_interval
+  monitoring_role_arn           = aws_iam_role.rds_enhanced_monitoring.arn
   apply_immediately             = true
   tags                          = var.tags
   depends_on                    = [
@@ -209,36 +238,78 @@ resource "aws_rds_cluster_instance" "secondary" {
 # RDS Aurora Parameter Groups
 ##############################
 
-resource "aws_rds_cluster_parameter_group" "aurora_postgres_cluster_parameter_group_p" {
-  count       = var.engine == "aurora-postgresql" ? 1 : 0
+resource "aws_rds_cluster_parameter_group" "aurora_cluster_parameter_group_p" {
   provider    = aws.primary
-  name        = "${var.name}-postgres-cluster-parameter-group"
+  name        = "${var.name}-cluster-parameter-group"
   family      = data.aws_rds_engine_version.family.parameter_group_family
-  description = "aurora-postgres-cluster-parameter-group"
+  description = "aurora-cluster-parameter-group"
+
+  dynamic "parameter" {
+    for_each = var.engine == "aurora-postgresql" ? local.apg_cluster_pgroup_params : local.mysql_cluster_pgroup_params
+    iterator = pblock
+
+    content {
+      name  = pblock.value.name
+      value = pblock.value.value
+      apply_method = pblock.value.apply_method
+    }
+  }
 }
 
-resource "aws_db_parameter_group" "aurora_postgres_db_parameter_group_p" {
-  count       = var.engine == "aurora-postgresql" ? 1 : 0
+resource "aws_db_parameter_group" "aurora_db_parameter_group_p" {
   provider    = aws.primary
-  name        = "${var.name}-postgres-db-parameter-group"
+  name        = "${var.name}-db-parameter-group"
   family      = data.aws_rds_engine_version.family.parameter_group_family
-  description = "aurora-postgres-db-parameter-group"
+  description = "aurora-db-parameter-group"
+
+  dynamic "parameter" {
+    for_each = var.engine == "aurora-postgresql" ? local.apg_db_pgroup_params : local.mysql_db_pgroup_params
+    iterator = pblock
+
+    content {
+      name  = pblock.value.name
+      value = pblock.value.value
+      apply_method = pblock.value.apply_method
+    }
+  }
 }
 
-resource "aws_rds_cluster_parameter_group" "aurora_postgres_cluster_parameter_group_s" {
-  count       = var.setup_globaldb && (var.engine == "aurora-postgresql") ? 1 : 0
+resource "aws_rds_cluster_parameter_group" "aurora_cluster_parameter_group_s" {
+  count       = var.setup_globaldb ? 1 : 0
   provider    = aws.secondary
-  name        = "${var.name}-postgres-cluster-parameter-group"
+  name        = "${var.name}-cluster-parameter-group"
   family      = data.aws_rds_engine_version.family.parameter_group_family
-  description = "aurora-postgres-cluster-parameter-group"
+  description = "aurora-cluster-parameter-group"
+
+  dynamic "parameter" {
+    for_each = var.engine == "aurora-postgresql" ? local.apg_cluster_pgroup_params : local.mysql_cluster_pgroup_params
+    iterator = pblock
+
+    content {
+      name  = pblock.value.name
+      value = pblock.value.value
+      apply_method = pblock.value.apply_method
+    }
+  }
 }
 
-resource "aws_db_parameter_group" "aurora_postgres_db_parameter_group_s" {
-  count       = var.setup_globaldb && (var.engine == "aurora-postgresql") ? 1 : 0
+resource "aws_db_parameter_group" "aurora_db_parameter_group_s" {
+  count       = var.setup_globaldb ? 1 : 0
   provider    = aws.secondary
-  name        = "${var.name}-postgres-db-parameter-group"
+  name        = "${var.name}-db-parameter-group"
   family      = data.aws_rds_engine_version.family.parameter_group_family
-  description = "aurora-postgres-db-parameter-group"
+  description = "aurora-db-parameter-group"
+
+  dynamic "parameter" {
+    for_each = var.engine == "aurora-postgresql" ? local.apg_db_pgroup_params : local.mysql_db_pgroup_params
+    iterator = pblock
+
+    content {
+      name  = pblock.value.name
+      value = pblock.value.value
+      apply_method = pblock.value.apply_method
+    }
+  }
 }
 
 #############################
