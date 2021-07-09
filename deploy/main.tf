@@ -22,8 +22,8 @@ resource "random_string" "rand4" {
 ######################################
 
 module "vpc_label" {
-  source    = "aws-quickstart/label/aws"
-  version   = "0.0.1"
+  source    = "aws-ia/label/aws"
+  version   = "0.0.2"
   region    = var.region
   namespace = var.namespace
   env       = var.env
@@ -37,8 +37,8 @@ module "vpc_label" {
 ######################################
 
 module "aurora_vpc_p" {
-  source            = "aws-quickstart/vpc/aws"
-  version           = "0.0.8"
+  source            = "aws-ia/vpc/aws"
+  version           = "0.0.2"
   region            = var.region
   cidr              = "10.0.0.0/16"
   public_subnets    = ["10.0.0.0/20", "10.0.32.0/20", "10.0.64.0/20"]
@@ -47,8 +47,8 @@ module "aurora_vpc_p" {
 }
 
 module "aurora_vpc_s" {
-  source            = "aws-quickstart/vpc/aws"
-  version           = "0.0.8"
+  source            = "aws-ia/vpc/aws"
+  version           = "0.0.2"
   region            = var.sec_region
   cidr              = "10.0.0.0/16"
   public_subnets    = ["10.0.0.0/20", "10.0.32.0/20", "10.0.64.0/20"]
