@@ -37,25 +37,29 @@ module "vpc_label" {
 ######################################
 
 module "aurora_vpc_p" {
-  source            = "aws-ia/vpc/aws"
-  version           = "0.0.2"
-  region            = var.region
-  cidr              = "10.0.0.0/16"
-  public_subnets    = ["10.0.0.0/20", "10.0.32.0/20", "10.0.64.0/20"]
-  private_subnets_A = ["10.0.16.0/20", "10.0.48.0/20", "10.0.80.0/20"]
-  tags              = module.vpc_label.tags
+  source                = "aws-ia/vpc/aws"
+  version               = "0.0.3"
+  name                  = "aurora-vpc"
+  region                = var.region
+  cidr                  = "10.0.0.0/16"
+  public_subnets        = ["10.0.0.0/20", "10.0.32.0/20", "10.0.64.0/20"]
+  private_subnets_A     = ["10.0.16.0/20", "10.0.48.0/20", "10.0.80.0/20"]
+  enable_dns_hostnames  = true
+  tags                  = module.vpc_label.tags
+  create_vpc            = true
 }
 
 module "aurora_vpc_s" {
-  source            = "aws-ia/vpc/aws"
-  version           = "0.0.2"
-  region            = var.sec_region
-  cidr              = "10.0.0.0/16"
-  public_subnets    = ["10.0.0.0/20", "10.0.32.0/20", "10.0.64.0/20"]
-  private_subnets_A = ["10.0.16.0/20", "10.0.48.0/20", "10.0.80.0/20"]
-  tags              = module.vpc_label.tags
-  # uncomment the following after https://github.com/aws-ia/terraform-aws-vpc/issues/6 is implemented
-  # create_vpc           =  var.setup_globaldb ? true : false
+  source                = "aws-ia/vpc/aws"
+  version               = "0.0.3"
+  name                  = "aurora-vpc"
+  region                = var.sec_region
+  cidr                  = "10.0.0.0/16"
+  public_subnets        = ["10.0.0.0/20", "10.0.32.0/20", "10.0.64.0/20"]
+  private_subnets_A     = ["10.0.16.0/20", "10.0.48.0/20", "10.0.80.0/20"]
+  enable_dns_hostnames  = true
+  tags                  = module.vpc_label.tags
+  create_vpc            = var.setup_globaldb ? true : false
 }
 
 ######################################
@@ -76,4 +80,5 @@ module "aurora" {
   setup_globaldb        = var.setup_globaldb
   tags                  = module.vpc_label.tags
   monitoring_interval   = var.monitoring_interval
+  storage_encrypted     = var.storage_encrypted
 }

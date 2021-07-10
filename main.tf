@@ -97,6 +97,7 @@ resource "aws_kms_key" "kms_p" {
   count                   = var.storage_encrypted ? 1 : 0
   description             = "KMS key for Aurora Storage Enryption"
   tags                    = var.tags
+  # following causes terraform destory to fail. But this is needed so that old Aurora encrypted snapshots can be restored.
   lifecycle {
     prevent_destroy = true
   }
@@ -107,6 +108,7 @@ resource "aws_kms_key" "kms_s" {
   count                   = var.setup_globaldb && var.storage_encrypted ? 1 : 0
   description             = "KMS key for Aurora Storage Enryption"
   tags                    = var.tags
+  # following causes terraform destory to fail. But this is needed so that old Aurora encrypted snapshots can be restored.
   lifecycle {
     prevent_destroy = true
   }
@@ -338,14 +340,16 @@ resource "aws_db_event_subscription" "default_p" {
 }
 
 resource "aws_sns_topic" "default_s" {
+  count     = var.setup_globaldb ? 1 : 0
   provider  = aws.secondary
   name      = "rds-events"
 }
 
 resource "aws_db_event_subscription" "default_s" {
+  count            = var.setup_globaldb ? 1 : 0
   provider         = aws.secondary
   name             = "${var.name}-rds-event-sub"
-  sns_topic        = aws_sns_topic.default_s.arn
+  sns_topic        = aws_sns_topic.default_s[0].arn
   source_type      = "db-cluster"
   source_ids       = [aws_rds_cluster.secondary[0].id]
   event_categories = [

@@ -106,7 +106,7 @@ variable "auto_minor_version_upgrade" {
 variable "storage_encrypted" {
   description = "Specifies whether the underlying storage layer should be encrypted"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "engine" {
@@ -130,7 +130,7 @@ variable "engine_version_mysql" {
 variable "setup_globaldb" {
   description = "Setup Aurora Global Database with 1 Primary and 1 X-region Secondary cluster"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "replica_scale_enabled" {
