@@ -1,22 +1,40 @@
 variable "region" {
   type        = string
-  description = "The name of the region you wish to deploy into"
+  description = "The name of the primary region you wish to deploy into"
+}
+
+variable "sec_region" {
+  type        = string
+  description = "The name of the secondary region you wish to deploy into"
 }
 
 variable "identifier" {
   description = "Cluster identifier"
   type        = string
-  default     = "rds"
-}
-variable "name" {
-  description = "Name given resources"
-  type        = string
-  default     = "tfm-aws"
+  default     = "tfm-aurora"
 }
 
+variable "name" {
+  description = "Prefix for resource names"
+  type        = string
+  default     = "tfm-aurora"
+}
+
+/*
 variable "vpc_id" {
   type        = string
   description = "VPC id"
+}
+*/
+
+variable "Private_subnet_ids_p" {
+  type        = list(string)
+  description = "A list of private subnet IDs in your Primary AWS region VPC"
+}
+
+variable "Private_subnet_ids_s" {
+  type        = list(string)
+  description = "A list of private subnet IDs in your Secondary AWS region VPC"
 }
 
 variable "allowed_security_groups" {
@@ -28,12 +46,13 @@ variable "allowed_security_groups" {
 variable "instance_class" {
   type        = string
   description = "Instance type to use at replica instance"
-  default     = "db.r4.large"
+  default     = "db.r5.large"
 }
 
 variable "skip_final_snapshot" {
   type        = string
   description = "skip creating a final snapshot before deleting the DB"
+  #set the value to false for actual workload
   default     = true
 }
 
@@ -87,23 +106,35 @@ variable "auto_minor_version_upgrade" {
 variable "storage_encrypted" {
   description = "Specifies whether the underlying storage layer should be encrypted"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "engine" {
-  description = "Aurora database engine type, currently aurora, aurora-postgresql"
+  description = "Aurora database engine type: aurora (for MySQL 5.6-compatible Aurora), aurora-mysql (for MySQL 5.7-compatible Aurora), aurora-postgresql"
   type        = string
-  default     = "aurora"
+  default     = "aurora-postgresql"
 }
 
-variable "engine_version" {
+variable "engine_version_pg" {
   description = "Aurora database engine version."
   type        = string
-  default     = "5.6.10a"
+  default     = "12.4"
+}
+
+variable "engine_version_mysql" {
+  description = "Aurora database engine version."
+  type        = string
+  default     = "5.7.mysql_aurora.2.10.0"
+}
+
+variable "setup_globaldb" {
+  description = "Setup Aurora Global Database with 1 Primary and 1 X-region Secondary cluster"
+  type        = bool
+  default     = false
 }
 
 variable "replica_scale_enabled" {
-  description = "Whether to enable autoscaling for RDS Aurora (MySQL) read replicas"
+  description = "Whether to enable autoscaling for Aurora read replica auto scaling"
   type        = bool
   default     = false
 }
@@ -114,4 +145,14 @@ variable "tags" {
   default = {
     Name = "tfm-aws-aurora-db"
   }
+}
+
+variable "monitoring_interval" {
+  description = "Enhanced Monitoring interval in seconds"
+  type        = number
+  default     = 1
+  validation {
+    condition     = contains([0, 1, 5, 10, 15, 30, 60], var.monitoring_interval)
+    error_message = "Valid values for var: monitoring_interval are (0, 1, 5, 10, 15, 30, 60)."
+  } 
 }
