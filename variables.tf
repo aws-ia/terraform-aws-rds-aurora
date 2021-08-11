@@ -179,15 +179,15 @@ variable "enable_audit_log" {
 
 variable "enable_error_log" {
   description = "Enable error log."
-  default     = true
+  default     = false
 }
 
 variable "enable_general_log" {
   description = "Enable general log."
-  default     = true
+  default     = false
 }
 
 variable "enable_slowquery_log" {
   description = "Enable slowquery log."
-  default     = true
+  default     = false
 }
