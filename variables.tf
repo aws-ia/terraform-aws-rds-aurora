@@ -43,6 +43,16 @@ variable "allowed_security_groups" {
   default     = []
 }
 
+variable "primary_instance_count" {
+  description = "instance count for primary cluster"
+  default = 2
+}
+
+variable "secondary_instance_count" {
+  description = "instance count for secondary cluster"
+  default = 1
+}
+
 variable "instance_class" {
   type        = string
   description = "Instance type to use at replica instance"
@@ -160,5 +170,30 @@ variable "monitoring_interval" {
   validation {
     condition     = contains([0, 1, 5, 10, 15, 30, 60], var.monitoring_interval)
     error_message = "Valid values for var: monitoring_interval are (0, 1, 5, 10, 15, 30, 60)."
-  }
+  } 
+}
+
+variable "snapshot_identifier" {
+  description = "id of snapshot to restore, if you do not want to restore a db, leave the default empty string."
+  default     = ""
+}
+
+variable "enable_audit_log" {
+  description = "Enable audit log."
+  default     = false
+}
+
+variable "enable_error_log" {
+  description = "Enable error log."
+  default     = true
+}
+
+variable "enable_general_log" {
+  description = "Enable general log."
+  default     = true
+}
+
+variable "enable_slowquery_log" {
+  description = "Enable slowquery log."
+  default     = true
 }
