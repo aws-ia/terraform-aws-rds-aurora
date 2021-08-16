@@ -149,9 +149,9 @@ resource "aws_rds_cluster" "primary" {
   availability_zones              = [data.aws_availability_zones.region_p.names[0], data.aws_availability_zones.region_p.names[1], data.aws_availability_zones.region_p.names[2]]
   db_subnet_group_name            = aws_db_subnet_group.private_p.name
   port                            = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
-  database_name                   = var.database_name
-  master_username                 = var.username
-  master_password                 = var.password == "" ? random_password.master_password.result : var.password
+  database_name                   = var.setup_as_secondary ? null : var.database_name
+  master_username                 = var.setup_as_secondary ? null : var.username
+  master_password                 = var.setup_as_secondary ? null : (var.password == "" ? random_password.master_password.result : var.password)
   db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.aurora_cluster_parameter_group_p.id
   backup_retention_period         = var.backup_retention_period
   preferred_backup_window         = var.preferred_backup_window
@@ -160,6 +160,11 @@ resource "aws_rds_cluster" "primary" {
   apply_immediately               = true
   skip_final_snapshot             = var.skip_final_snapshot
   tags                            = var.tags
+  depends_on                      = [
+    # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destory
+    # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destory to work
+    #aws_rds_cluster_instance.secondary,
+  ]
   lifecycle {
     ignore_changes = [
       replication_source_identifier,
@@ -205,7 +210,9 @@ resource "aws_rds_cluster" "secondary" {
   skip_final_snapshot             = var.skip_final_snapshot
   tags                            = var.tags
   depends_on                      = [
-    aws_rds_cluster.primary,
+    # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destory
+    # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destory to work
+    aws_rds_cluster_instance.primary,
   ]
   lifecycle {
     ignore_changes = [
@@ -231,9 +238,6 @@ resource "aws_rds_cluster_instance" "secondary" {
   monitoring_role_arn           = aws_iam_role.rds_enhanced_monitoring.arn
   apply_immediately             = true
   tags                          = var.tags
-  depends_on                    = [
-    aws_rds_cluster.primary,
-  ]
 }
 
 #############################

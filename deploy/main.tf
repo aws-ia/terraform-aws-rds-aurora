@@ -76,8 +76,10 @@ module "aurora" {
   engine                = var.engine
   engine_version_pg     = var.engine_version_pg
   engine_version_mysql  = var.engine_version_mysql
+  username              = var.username
   password              = var.password
   setup_globaldb        = var.setup_globaldb
+  setup_as_secondary    = var.setup_as_secondary
   tags                  = module.vpc_label.tags
   monitoring_interval   = var.monitoring_interval
   storage_encrypted     = var.storage_encrypted
