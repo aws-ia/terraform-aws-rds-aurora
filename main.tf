@@ -159,6 +159,8 @@ resource "aws_rds_cluster" "primary" {
   kms_key_id                      = var.storage_encrypted ? aws_kms_key.kms_p[0].arn : null
   apply_immediately               = true
   skip_final_snapshot             = var.skip_final_snapshot
+  snapshot_identifier             = var.snapshot_identifier != "" ? var.snapshot_identifier : null
+  enabled_cloudwatch_logs_exports = local.logs_set
   tags                            = var.tags
   depends_on                      = [
     # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destory
@@ -173,7 +175,7 @@ resource "aws_rds_cluster" "primary" {
 }
 
 resource "aws_rds_cluster_instance" "primary" {
-  count                         = 2
+  count                         = var.primary_instance_count
   provider                      = aws.primary
   identifier                    = "${var.name}-${var.region}-${count.index + 1}"
   cluster_identifier            = aws_rds_cluster.primary.id
@@ -223,7 +225,7 @@ resource "aws_rds_cluster" "secondary" {
 
 # Secondary Cluster Instances
 resource "aws_rds_cluster_instance" "secondary" {
-  count                         = var.setup_globaldb ? 1 : 0
+  count                         = var.setup_globaldb ? var.secondary_instance_count : 0
   provider                      = aws.secondary
   identifier                    = "${var.name}-${var.sec_region}-${count.index + 1}"
   cluster_identifier            = aws_rds_cluster.secondary[0].id
