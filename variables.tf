@@ -133,6 +133,12 @@ variable "setup_globaldb" {
   default     = false
 }
 
+variable "setup_as_secondary" {
+  description = "Setup Aurora Global Database Secondary cluster after an unplanned failover"
+  type        = bool
+  default     = false
+}
+
 variable "replica_scale_enabled" {
   description = "Whether to enable autoscaling for Aurora read replica auto scaling"
   type        = bool

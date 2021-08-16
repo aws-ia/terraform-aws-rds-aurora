@@ -24,6 +24,13 @@ variable "delimiter" {
   description = "delimiter, which could be used between name, namespace and env"
   default     = "-"
 }
+
+variable "username" {
+  description = "Master DB username"
+  type        = string
+  default     = "root"
+}
+
 variable "password" {
   default     = ""
   description = "If no password is provided, a random password will be generated"
@@ -53,6 +60,12 @@ variable "engine_version_mysql" {
 
 variable "setup_globaldb" {
   description = "Setup Aurora Global Database with 1 Primary and 1 X-region Secondary cluster"
+  type        = bool
+  default     = false
+}
+
+variable "setup_as_secondary" {
+  description = "Setup Aurora Global Database Secondary cluster after an unplanned failover"
   type        = bool
   default     = false
 }
