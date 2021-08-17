@@ -67,20 +67,22 @@ module "aurora_vpc_s" {
 ######################################
 
 module "aurora" {
-  source                = "../"
-  region                = var.region
-  sec_region            = var.sec_region
-  #vpc_id               = module.aurora_vpc.vpc_id
-  Private_subnet_ids_p  = [module.aurora_vpc_p.PrivateSubnet1AID, module.aurora_vpc_p.PrivateSubnet2AID, module.aurora_vpc_p.PrivateSubnet3AID]
-  Private_subnet_ids_s  = var.setup_globaldb ? [module.aurora_vpc_s.PrivateSubnet1AID, module.aurora_vpc_s.PrivateSubnet2AID, module.aurora_vpc_s.PrivateSubnet3AID] : null
-  engine                = var.engine
-  engine_version_pg     = var.engine_version_pg
-  engine_version_mysql  = var.engine_version_mysql
-  username              = var.username
-  password              = var.password
-  setup_globaldb        = var.setup_globaldb
-  setup_as_secondary    = var.setup_as_secondary
-  tags                  = module.vpc_label.tags
-  monitoring_interval   = var.monitoring_interval
-  storage_encrypted     = var.storage_encrypted
+  source                    = "../"
+  region                    = var.region
+  sec_region                = var.sec_region
+  #vpc_id                   = module.aurora_vpc.vpc_id
+  Private_subnet_ids_p      = [module.aurora_vpc_p.PrivateSubnet1AID, module.aurora_vpc_p.PrivateSubnet2AID, module.aurora_vpc_p.PrivateSubnet3AID]
+  Private_subnet_ids_s      = var.setup_globaldb ? [module.aurora_vpc_s.PrivateSubnet1AID, module.aurora_vpc_s.PrivateSubnet2AID, module.aurora_vpc_s.PrivateSubnet3AID] : null
+  engine                    = var.engine
+  engine_version_pg         = var.engine_version_pg
+  engine_version_mysql      = var.engine_version_mysql
+  username                  = var.username
+  password                  = var.password
+  setup_globaldb            = var.setup_globaldb
+  setup_as_secondary        = var.setup_as_secondary
+  tags                      = module.vpc_label.tags
+  monitoring_interval       = var.monitoring_interval
+  storage_encrypted         = var.storage_encrypted
+  primary_instance_count    = var.primary_instance_count
+  secondary_instance_count  = var.secondary_instance_count
 }

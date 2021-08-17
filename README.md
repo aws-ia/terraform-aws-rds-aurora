@@ -1,5 +1,5 @@
 # Terraform Amazon Aurora
-Authors: David Wright (dwright@hashicorp.com) and Tony Vattahil (tonynv@amazon.com)
+Authors: David Wright (dwright@hashicorp.com), Tony Vattahil (tonynv@amazon.com) and Arabinda Pani (arabindp@amazon.com)
 
 To deploy the Terraform Amazon Aurora module, do the following:
 

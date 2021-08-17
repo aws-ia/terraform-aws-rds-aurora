@@ -62,7 +62,7 @@ variable "instance_class" {
 variable "skip_final_snapshot" {
   type        = string
   description = "skip creating a final snapshot before deleting the DB"
-  #set the value to false for actual workload
+  #set the value to false for production workload
   default     = true
 }
 
@@ -81,12 +81,6 @@ variable "username" {
 variable "password" {
   description = "Master DB password"
   type        = string
-}
-
-variable "final_snapshot_identifier_prefix" {
-  description = "The prefix name to use when creating a final snapshot on cluster destroy, appends a random 8 digits to name to ensure it's unique too."
-  type        = string
-  default     = "final"
 }
 
 variable "backup_retention_period" {
@@ -174,26 +168,31 @@ variable "monitoring_interval" {
 }
 
 variable "snapshot_identifier" {
-  description = "id of snapshot to restore, if you do not want to restore a db, leave the default empty string."
+  description = "id of snapshot to restore. If you do not want to restore a db, leave the default empty string."
   default     = ""
 }
 
 variable "enable_audit_log" {
-  description = "Enable audit log."
+  description = "Enable MySQL audit log export to Amazon Cloudwatch."
   default     = false
 }
 
 variable "enable_error_log" {
-  description = "Enable error log."
+  description = "Enable MySQL error log export to Amazon Cloudwatch."
   default     = false
 }
 
 variable "enable_general_log" {
-  description = "Enable general log."
+  description = "Enable MySQL general log export to Amazon Cloudwatch."
   default     = false
 }
 
 variable "enable_slowquery_log" {
-  description = "Enable slowquery log."
+  description = "Enable MySQL slowquery log export to Amazon Cloudwatch."
+  default     = false
+}
+
+variable "enable_postgresql_log" {
+  description = "Enable PostgreSQL log export to Amazon Cloudwatch."
   default     = false
 }
