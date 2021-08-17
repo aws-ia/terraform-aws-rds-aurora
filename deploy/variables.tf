@@ -24,6 +24,13 @@ variable "delimiter" {
   description = "delimiter, which could be used between name, namespace and env"
   default     = "-"
 }
+
+variable "username" {
+  description = "Master DB username"
+  type        = string
+  default     = "root"
+}
+
 variable "password" {
   default     = ""
   description = "If no password is provided, a random password will be generated"
@@ -57,6 +64,12 @@ variable "setup_globaldb" {
   default     = false
 }
 
+variable "setup_as_secondary" {
+  description = "Setup Aurora Global Database Secondary cluster after an unplanned failover"
+  type        = bool
+  default     = false
+}
+
 variable "monitoring_interval" {
   description = "Enhanced Monitoring interval in seconds"
   type        = number
@@ -71,4 +84,14 @@ variable "storage_encrypted" {
   description = "Specifies whether the underlying storage layer should be encrypted"
   type        = bool
   default     = false
+}
+
+variable "primary_instance_count" {
+  description = "instance count for primary cluster"
+  default = 2
+}
+
+variable "secondary_instance_count" {
+  description = "instance count for secondary cluster"
+  default = 1
 }
