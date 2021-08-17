@@ -85,3 +85,13 @@ variable "storage_encrypted" {
   type        = bool
   default     = false
 }
+
+variable "primary_instance_count" {
+  description = "instance count for primary cluster"
+  default = 2
+}
+
+variable "secondary_instance_count" {
+  description = "instance count for secondary cluster"
+  default = 1
+}

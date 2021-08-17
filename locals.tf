@@ -116,9 +116,10 @@ locals {
   }]
 
   logs_set = compact([
-    var.enable_audit_log ? "audit" : "",
-    var.enable_error_log ? "error" : "",
-    var.enable_general_log ? "general" : "",
-    var.enable_slowquery_log ? "slowquery" : "",
+    var.enable_audit_log && (var.engine != "aurora-postgresql") ? "audit" : "",
+    var.enable_error_log && (var.engine != "aurora-postgresql") ? "error" : "",
+    var.enable_general_log && (var.engine != "aurora-postgresql") ? "general" : "",
+    var.enable_slowquery_log && (var.engine != "aurora-postgresql") ? "slowquery" : "",
+    var.enable_postgresql_log && (var.engine == "aurora-postgresql") ? "postgresql" : "",
   ])
 }   
