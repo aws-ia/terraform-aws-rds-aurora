@@ -11,13 +11,13 @@ variable "sec_region" {
 variable "identifier" {
   description = "Cluster identifier"
   type        = string
-  default     = "tfm-aurora"
+  default     = "aurora"
 }
 
 variable "name" {
   description = "Prefix for resource names"
   type        = string
-  default     = "tfm-aurora"
+  default     = "rds"
 }
 
 /*
@@ -53,7 +53,7 @@ variable "skip_final_snapshot" {
   type        = string
   description = "skip creating a final snapshot before deleting the DB"
   #set the value to false for actual workload
-  default     = true
+  default = true
 }
 
 variable "database_name" {
@@ -143,7 +143,7 @@ variable "tags" {
   description = "A map of tags to add to all resources."
   type        = map(string)
   default = {
-    Name = "tfm-aws-aurora-db"
+    Name = "aurora-db"
   }
 }
 
@@ -154,5 +154,5 @@ variable "monitoring_interval" {
   validation {
     condition     = contains([0, 1, 5, 10, 15, 30, 60], var.monitoring_interval)
     error_message = "Valid values for var: monitoring_interval are (0, 1, 5, 10, 15, 30, 60)."
-  } 
+  }
 }
