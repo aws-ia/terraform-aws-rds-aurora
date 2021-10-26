@@ -1,10 +1,10 @@
 variable "region" {
-  description = "The name of the primary region you wish to deploy into"
+  description = "The name of the primary AWS region you wish to deploy into"
   default = "us-east-2"
 }
 
 variable "sec_region" {
-  description = "The name of the secondary region you wish to deploy into"
+  description = "The name of the secondary AWS region you wish to deploy into"
   default = "us-west-2"
 }
 
@@ -47,15 +47,15 @@ variable "engine" {
 }
 
 variable "engine_version_pg" {
-  description = "Aurora database engine version."
+  description = "Aurora PostgreSQL database engine version."
   type        = string
-  default     = "12.4"
+  default     = "13.3"
 }
 
 variable "engine_version_mysql" {
-  description = "Aurora database engine version."
+  description = "Aurora MySQL database engine version."
   type        = string
-  default     = "5.7.mysql_aurora.2.10.0"
+  default     = "5.7.mysql_aurora.2.10.1"
 }
 
 variable "setup_globaldb" {
@@ -65,7 +65,7 @@ variable "setup_globaldb" {
 }
 
 variable "setup_as_secondary" {
-  description = "Setup Aurora Global Database Secondary cluster after an unplanned failover"
+  description = "Setup aws_rds_cluster.primary Terraform resource as Secondary Aurora cluster after an unplanned Aurora Global DB failover"
   type        = bool
   default     = false
 }
@@ -80,18 +80,23 @@ variable "monitoring_interval" {
   } 
 }
 
+variable "snapshot_identifier" {
+  description = "id of snapshot to restore. If you do not want to restore a db, leave the default empty string."
+  default     = ""
+}
+
 variable "storage_encrypted" {
-  description = "Specifies whether the underlying storage layer should be encrypted"
+  description = "Specifies whether the underlying Aurora storage layer should be encrypted"
   type        = bool
   default     = false
 }
 
 variable "primary_instance_count" {
-  description = "instance count for primary cluster"
+  description = "instance count for primary Aurora cluster"
   default = 2
 }
 
 variable "secondary_instance_count" {
-  description = "instance count for secondary cluster"
+  description = "instance count for secondary Aurora cluster"
   default = 1
 }
