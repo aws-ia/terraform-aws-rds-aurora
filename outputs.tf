@@ -24,26 +24,25 @@ output "aurora_cluster_reader_endpoint" {
   value       = aws_rds_cluster.primary.reader_endpoint
 }
 
-// database_name is not set on `aws_rds_cluster` resource if it was not specified, so can't be used in output
+output "aurora_cluster_port" {
+  description = "Primary Aurora cluster endpoint port"
+  value       = aws_rds_cluster.primary.port
+}
+
 output "aurora_cluster_database_name" {
   description = "Name for an automatically created database on Aurora cluster creation"
   value       = var.database_name
+}
+
+output "aurora_cluster_master_username" {
+  description = "Aurora master username"
+  value       = aws_rds_cluster.primary.master_username
 }
 
 output "aurora_cluster_master_password" {
   description = "Aurora master User password"
   value       = aws_rds_cluster.primary.master_password
   sensitive   = true
-}
-
-output "aurora_cluster_port" {
-  description = "Aurora cluster endpoint port"
-  value       = aws_rds_cluster.primary.port
-}
-
-output "aurora_cluster_master_username" {
-  description = "Aurora master username"
-  value       = aws_rds_cluster.primary.master_username
 }
 
 output "aurora_cluster_hosted_zone_id" {

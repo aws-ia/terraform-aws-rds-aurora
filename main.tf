@@ -4,6 +4,7 @@
 
 terraform {
   required_version = ">= 1.0.0"
+  backend "remote" {}
 }
 
 provider "aws" {
@@ -72,7 +73,7 @@ resource "aws_db_subnet_group" "private_p" {
   provider   = aws.primary
   name       = "${var.name}-sg"
   subnet_ids = var.Private_subnet_ids_p
-  tags = {
+  tags       = {
     Name = "My DB subnet group"
   }
 }
@@ -82,7 +83,7 @@ resource "aws_db_subnet_group" "private_s" {
   count      = var.setup_globaldb ? 1 : 0
   name       = "${var.name}-sg"
   subnet_ids = var.Private_subnet_ids_s
-  tags = {
+  tags       = {
     Name = "My DB subnet group"
   }
 }
@@ -92,22 +93,22 @@ resource "aws_db_subnet_group" "private_s" {
 ###########
 
 resource "aws_kms_key" "kms_p" {
-  provider                = aws.primary
-  count                   = var.storage_encrypted ? 1 : 0
-  description             = "KMS key for Aurora Storage Enryption"
-  tags                    = var.tags
-  # following causes terraform destory to fail. But this is needed so that old Aurora encrypted snapshots can be restored for your production workload.
+  provider    = aws.primary
+  count       = var.storage_encrypted ? 1 : 0
+  description = "KMS key for Aurora Storage Encryption"
+  tags        = var.tags
+  # following causes terraform destroy to fail. But this is needed so that Aurora encrypted snapshots can be restored for your production workload.
   lifecycle {
     prevent_destroy = true
   }
 }
 
 resource "aws_kms_key" "kms_s" {
-  provider                = aws.secondary
-  count                   = var.setup_globaldb && var.storage_encrypted ? 1 : 0
-  description             = "KMS key for Aurora Storage Enryption"
-  tags                    = var.tags
-  # following causes terraform destory to fail. But this is needed so that old Aurora encrypted snapshots can be restored for your production workload.
+  provider    = aws.secondary
+  count       = var.setup_globaldb && var.storage_encrypted ? 1 : 0
+  description = "KMS key for Aurora Storage Encryption"
+  tags        = var.tags
+  # following causes terraform destroy to fail. But this is needed so that Aurora encrypted snapshots can be restored for your production workload.
   lifecycle {
     prevent_destroy = true
   }
@@ -158,12 +159,13 @@ resource "aws_rds_cluster" "primary" {
   kms_key_id                      = var.storage_encrypted ? aws_kms_key.kms_p[0].arn : null
   apply_immediately               = true
   skip_final_snapshot             = var.skip_final_snapshot
+  final_snapshot_identifier       = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.region}-${md5(timestamp())}"
   snapshot_identifier             = var.snapshot_identifier != "" ? var.snapshot_identifier : null
   enabled_cloudwatch_logs_exports = local.logs_set
   tags                            = var.tags
   depends_on                      = [
-    # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destory
-    # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destory to work
+    # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy
+    # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destroy to work
     #aws_rds_cluster_instance.secondary,
   ]
   lifecycle {
@@ -174,21 +176,21 @@ resource "aws_rds_cluster" "primary" {
 }
 
 resource "aws_rds_cluster_instance" "primary" {
-  count                         = var.primary_instance_count
-  provider                      = aws.primary
-  identifier                    = "${var.name}-${var.region}-${count.index + 1}"
-  cluster_identifier            = aws_rds_cluster.primary.id
-  engine                        = aws_rds_cluster.primary.engine
-  engine_version                = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
-  auto_minor_version_upgrade    = var.setup_globaldb ? false : var.auto_minor_version_upgrade
-  instance_class                = var.instance_class
-  db_subnet_group_name          = aws_db_subnet_group.private_p.name
-  db_parameter_group_name       = aws_db_parameter_group.aurora_db_parameter_group_p.id
-  performance_insights_enabled  = true
-  monitoring_interval           = var.monitoring_interval
-  monitoring_role_arn           = aws_iam_role.rds_enhanced_monitoring.arn
-  apply_immediately             = true
-  tags                          = var.tags
+  count                        = var.primary_instance_count
+  provider                     = aws.primary
+  identifier                   = "${var.name}-${var.region}-${count.index + 1}"
+  cluster_identifier           = aws_rds_cluster.primary.id
+  engine                       = aws_rds_cluster.primary.engine
+  engine_version               = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
+  auto_minor_version_upgrade   = var.setup_globaldb ? false : var.auto_minor_version_upgrade
+  instance_class               = var.instance_class
+  db_subnet_group_name         = aws_db_subnet_group.private_p.name
+  db_parameter_group_name      = aws_db_parameter_group.aurora_db_parameter_group_p.id
+  performance_insights_enabled = true
+  monitoring_interval          = var.monitoring_interval
+  monitoring_role_arn          = aws_iam_role.rds_enhanced_monitoring.arn
+  apply_immediately            = true
+  tags                         = var.tags
 }
 
 # Secondary Aurora Cluster
@@ -209,11 +211,12 @@ resource "aws_rds_cluster" "secondary" {
   kms_key_id                      = var.storage_encrypted ? aws_kms_key.kms_s[0].arn : null
   apply_immediately               = true
   skip_final_snapshot             = var.skip_final_snapshot
+  final_snapshot_identifier       = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.sec_region}-${md5(timestamp())}"
   enabled_cloudwatch_logs_exports = local.logs_set
   tags                            = var.tags
   depends_on                      = [
-    # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destory
-    # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destory to work
+    # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy
+    # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destroy to work
     aws_rds_cluster_instance.primary,
   ]
   lifecycle {
@@ -225,21 +228,21 @@ resource "aws_rds_cluster" "secondary" {
 
 # Secondary Cluster Instances
 resource "aws_rds_cluster_instance" "secondary" {
-  count                         = var.setup_globaldb ? var.secondary_instance_count : 0
-  provider                      = aws.secondary
-  identifier                    = "${var.name}-${var.sec_region}-${count.index + 1}"
-  cluster_identifier            = aws_rds_cluster.secondary[0].id
-  engine                        = var.engine
-  engine_version                = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
-  auto_minor_version_upgrade    = false
-  instance_class                = var.instance_class
-  db_subnet_group_name          = aws_db_subnet_group.private_s[0].name
-  db_parameter_group_name       = aws_db_parameter_group.aurora_db_parameter_group_s[0].id
-  performance_insights_enabled  = true
-  monitoring_interval           = var.monitoring_interval
-  monitoring_role_arn           = aws_iam_role.rds_enhanced_monitoring.arn
-  apply_immediately             = true
-  tags                          = var.tags
+  count                        = var.setup_globaldb ? var.secondary_instance_count : 0
+  provider                     = aws.secondary
+  identifier                   = "${var.name}-${var.sec_region}-${count.index + 1}"
+  cluster_identifier           = aws_rds_cluster.secondary[0].id
+  engine                       = var.engine
+  engine_version               = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
+  auto_minor_version_upgrade   = false
+  instance_class               = var.instance_class
+  db_subnet_group_name         = aws_db_subnet_group.private_s[0].name
+  db_parameter_group_name      = aws_db_parameter_group.aurora_db_parameter_group_s[0].id
+  performance_insights_enabled = true
+  monitoring_interval          = var.monitoring_interval
+  monitoring_role_arn          = aws_iam_role.rds_enhanced_monitoring.arn
+  apply_immediately            = true
+  tags                         = var.tags
 }
 
 #############################
@@ -257,8 +260,8 @@ resource "aws_rds_cluster_parameter_group" "aurora_cluster_parameter_group_p" {
     iterator = pblock
 
     content {
-      name         = pblock.value.name
-      value        = pblock.value.value
+      name  	   = pblock.value.name
+      value 	   = pblock.value.value
       apply_method = pblock.value.apply_method
     }
   }
@@ -325,8 +328,8 @@ resource "aws_db_parameter_group" "aurora_db_parameter_group_s" {
 ##############################
 
 resource "aws_sns_topic" "default_p" {
-  provider  = aws.primary
-  name      = "aurora-monitoring-sns"
+  provider = aws.primary
+  name     = "rds-events"
 }
 
 resource "aws_db_event_subscription" "default_p" {
@@ -346,9 +349,9 @@ resource "aws_db_event_subscription" "default_p" {
 }
 
 resource "aws_sns_topic" "default_s" {
-  count     = var.setup_globaldb ? 1 : 0
-  provider  = aws.secondary
-  name      = "aurora-monitoring-sns"
+  count    = var.setup_globaldb ? 1 : 0
+  provider = aws.secondary
+  name     = "rds-events"
 }
 
 resource "aws_db_event_subscription" "default_s" {
@@ -369,165 +372,163 @@ resource "aws_db_event_subscription" "default_s" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_util_p" {
-  count                     = var.primary_instance_count
-  provider                  = aws.primary
-  alarm_name                = "CPU_Util-${element(split(",", join(",", aws_rds_cluster_instance.primary.*.id)), count.index)}"
-  alarm_description         = "This metric monitors Aurora Instance CPU Utilization"
-  metric_name               = "CPUUtilization"
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
-  evaluation_periods        = "5"
-  treat_missing_data 		    = "notBreaching"
-  period                    = "60"
-  threshold                 = "80"
-  statistic                 = "Maximum"
-  unit						          = "Percent"
-  alarm_actions				      = [aws_sns_topic.default_p.arn]
-  namespace                 = "AWS/RDS"
-  dimensions                = {
-        DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
-      }
+  count               = var.primary_instance_count
+  provider            = aws.primary
+  alarm_name          = "CPU_Util-${element(split(",", join(",", aws_rds_cluster_instance.primary.*.id)), count.index)}"
+  alarm_description   = "This metric monitors Aurora Instance CPU Utilization"
+  metric_name         = "CPUUtilization"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "5"
+  treat_missing_data  = "notBreaching"
+  period              = "60"
+  threshold           = "80"
+  statistic           = "Maximum"
+  unit				  = "Percent"
+  alarm_actions		  = [aws_sns_topic.default_p.arn]
+  namespace           = "AWS/RDS"
+  dimensions          = {
+    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
+  }
 }
 
-
 resource "aws_cloudwatch_metric_alarm" "free_local_storage_p" {
-  count                     = var.primary_instance_count
-  provider                  = aws.primary
-  alarm_name                = "Free_local_storage-${element(split(",", join(",", aws_rds_cluster_instance.primary.*.id)), count.index)}"
-  alarm_description         = "This metric monitors Aurora Local Storage Utilization"
-  metric_name               = "FreeLocalStorage"
-  comparison_operator       = "LessThanOrEqualToThreshold"
-  evaluation_periods        = "5"
-  treat_missing_data 		    = "notBreaching"
-  period                    = "60"
-  threshold                 = "5368709120"
-  statistic                 = "Average"
-  unit						          = "Bytes"
-  alarm_actions				      = [aws_sns_topic.default_p.arn]
-  namespace                 = "AWS/RDS"
-  dimensions                = {
-        DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
-      }
+  count               = var.primary_instance_count
+  provider            = aws.primary
+  alarm_name          = "Free_local_storage-${element(split(",", join(",", aws_rds_cluster_instance.primary.*.id)), count.index)}"
+  alarm_description   = "This metric monitors Aurora Local Storage Utilization"
+  metric_name         = "FreeLocalStorage"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "5"
+  treat_missing_data  = "notBreaching"
+  period              = "60"
+  threshold           = "5368709120"
+  statistic           = "Average"
+  unit				  = "Bytes"
+  alarm_actions		  = [aws_sns_topic.default_p.arn]
+  namespace           = "AWS/RDS"
+  dimensions          = {
+    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "free_random_access_memory_p" {
-  count                     = var.primary_instance_count
-  provider                  = aws.primary
-  alarm_name                = "FreeableMemory-${element(split(",", join(",", aws_rds_cluster_instance.primary.*.id)), count.index)}"
-  alarm_description         = "This metric monitors Aurora Instance Random Access Memory Utilization"
-  metric_name               = "FreeableMemory"
-  comparison_operator       = "LessThanOrEqualToThreshold"
-  evaluation_periods        = "5"
-  treat_missing_data 		    = "notBreaching"
-  period                    = "60"
-  threshold                 = "2147483648"
-  statistic                 = "Average"
-  unit						          = "Bytes"
-  alarm_actions				      = [aws_sns_topic.default_p.arn]
-  namespace                 = "AWS/RDS"
-  dimensions                = {
-        DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
-      }
+  count               = var.primary_instance_count
+  provider            = aws.primary
+  alarm_name          = "FreeableMemory-${element(split(",", join(",", aws_rds_cluster_instance.primary.*.id)), count.index)}"
+  alarm_description   = "This metric monitors Aurora Instance Random Access Memory Utilization"
+  metric_name         = "FreeableMemory"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "5"
+  treat_missing_data  = "notBreaching"
+  period              = "60"
+  threshold           = "2147483648"
+  statistic           = "Average"
+  unit				  = "Bytes"
+  alarm_actions		  = [aws_sns_topic.default_p.arn]
+  namespace           = "AWS/RDS"
+  dimensions          = {
+    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "PG_MaxUsedTxIDs_p" {
-  count                     = var.engine == "aurora-postgresql" ? 1 : 0
-  provider                  = aws.primary
-  alarm_name                = "PG_MaxUsedTxIDs-${aws_rds_cluster.primary.id}"
-  alarm_description         = "This metric monitors Aurora PostgreSQL Max Used Tx IDs"
-  metric_name               = "MaximumUsedTransactionIDs"
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
-  evaluation_periods        = "5"
-  treat_missing_data 		    = "notBreaching"
-  period                    = "60"
-  threshold                 = "600000000"
-  statistic                 = "Average"
-  unit						          = "Count"
-  alarm_actions				      = [aws_sns_topic.default_p.arn]
-  namespace                 = "AWS/RDS"
-  dimensions                = {
-        DBClusterIdentifier = "${aws_rds_cluster.primary.id}"
-        Role                = "WRITER"
-      }
+  count               = var.engine == "aurora-postgresql" ? 1 : 0
+  provider            = aws.primary
+  alarm_name          = "PG_MaxUsedTxIDs-${aws_rds_cluster.primary.id}"
+  alarm_description   = "This metric monitors Aurora PostgreSQL Max Used Tx IDs"
+  metric_name         = "MaximumUsedTransactionIDs"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "5"
+  treat_missing_data  = "notBreaching"
+  period              = "60"
+  threshold           = "600000000"
+  statistic           = "Average"
+  unit				  = "Count"
+  alarm_actions		  = [aws_sns_topic.default_p.arn]
+  namespace           = "AWS/RDS"
+  dimensions          = {
+    DBClusterIdentifier = "${aws_rds_cluster.primary.id}"
+    Role                = "WRITER"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "cpu_util_s" {
-  count                     = var.setup_globaldb ? var.secondary_instance_count : 0
-  provider                  = aws.secondary
-  alarm_name                = "CPU_Util-${element(split(",", join(",", aws_rds_cluster_instance.secondary.*.id)), count.index)}"
-  alarm_description         = "This metric monitors Aurora Instance CPU Utilization"
-  metric_name               = "CPUUtilization"
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
-  evaluation_periods        = "5"
-  treat_missing_data 		    = "notBreaching"
-  period                    = "60"
-  threshold                 = "80"
-  statistic                 = "Maximum"
-  unit						          = "Percent"
-  alarm_actions				      = [aws_sns_topic.default_s[0].arn]
-  namespace                 = "AWS/RDS"
-  dimensions                = {
-        DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
-      }
+  count               = var.setup_globaldb ? var.secondary_instance_count : 0
+  provider            = aws.secondary
+  alarm_name          = "CPU_Util-${element(split(",", join(",", aws_rds_cluster_instance.secondary.*.id)), count.index)}"
+  alarm_description   = "This metric monitors Aurora Instance CPU Utilization"
+  metric_name         = "CPUUtilization"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "5"
+  treat_missing_data  = "notBreaching"
+  period              = "60"
+  threshold           = "80"
+  statistic           = "Maximum"
+  unit				  = "Percent"
+  alarm_actions		  = [aws_sns_topic.default_s[0].arn]
+  namespace           = "AWS/RDS"
+  dimensions          = {
+    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
+  }
 }
 
-
 resource "aws_cloudwatch_metric_alarm" "free_local_storage_s" {
-  count                     = var.setup_globaldb ? var.secondary_instance_count : 0
-  provider                  = aws.secondary
-  alarm_name                = "Free_local_storage-${element(split(",", join(",", aws_rds_cluster_instance.secondary.*.id)), count.index)}"
-  alarm_description         = "This metric monitors Aurora Local Storage Utilization"
-  metric_name               = "FreeLocalStorage"
-  comparison_operator       = "LessThanOrEqualToThreshold"
-  evaluation_periods        = "5"
-  treat_missing_data 		    = "notBreaching"
-  period                    = "60"
-  threshold                 = "5368709120"
-  statistic                 = "Average"
-  unit						          = "Bytes"
-  alarm_actions				      = [aws_sns_topic.default_s[0].arn]
-  namespace                 = "AWS/RDS"
-  dimensions                = {
-        DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
-      }
+  count               = var.setup_globaldb ? var.secondary_instance_count : 0
+  provider            = aws.secondary
+  alarm_name          = "Free_local_storage-${element(split(",", join(",", aws_rds_cluster_instance.secondary.*.id)), count.index)}"
+  alarm_description   = "This metric monitors Aurora Local Storage Utilization"
+  metric_name         = "FreeLocalStorage"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "5"
+  treat_missing_data  = "notBreaching"
+  period              = "60"
+  threshold           = "5368709120"
+  statistic           = "Average"
+  unit				  = "Bytes"
+  alarm_actions		  = [aws_sns_topic.default_s[0].arn]
+  namespace           = "AWS/RDS"
+  dimensions          = {
+    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "free_random_access_memory_s" {
-  count                     = var.setup_globaldb ? var.secondary_instance_count : 0
-  provider                  = aws.secondary
-  alarm_name                = "FreeableMemory-${element(split(",", join(",", aws_rds_cluster_instance.secondary.*.id)), count.index)}"
-  alarm_description         = "This metric monitors Aurora Instance Random Access Memory Utilization"
-  metric_name               = "FreeableMemory"
-  comparison_operator       = "LessThanOrEqualToThreshold"
-  evaluation_periods        = "5"
-  treat_missing_data 		    = "notBreaching"
-  period                    = "60"
-  threshold                 = "2147483648"
-  statistic                 = "Average"
-  unit						          = "Bytes"
-  alarm_actions				      = [aws_sns_topic.default_s[0].arn]
-  namespace                 = "AWS/RDS"
-  dimensions                = {
-        DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
-      }
+  count               = var.setup_globaldb ? var.secondary_instance_count : 0
+  provider            = aws.secondary
+  alarm_name          = "FreeableMemory-${element(split(",", join(",", aws_rds_cluster_instance.secondary.*.id)), count.index)}"
+  alarm_description   = "This metric monitors Aurora Instance Random Access Memory Utilization"
+  metric_name         = "FreeableMemory"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = "5"
+  treat_missing_data  = "notBreaching"
+  period              = "60"
+  threshold           = "2147483648"
+  statistic           = "Average"
+  unit				  = "Bytes"
+  alarm_actions		  = [aws_sns_topic.default_s[0].arn]
+  namespace           = "AWS/RDS"
+  dimensions          = {
+    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
+  }
 }
 
 resource "aws_cloudwatch_metric_alarm" "PG_MaxUsedTxIDs_s" {
-  count                     = (var.engine == "aurora-postgresql") && var.setup_globaldb ? 1 : 0
-  provider                  = aws.secondary
-  alarm_name                = "PG_MaxUsedTxIDs-${aws_rds_cluster.secondary[0].id}"
-  alarm_description         = "This metric monitors Aurora PostgreSQL Max Used Tx IDs"
-  metric_name               = "MaximumUsedTransactionIDs"
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
-  evaluation_periods        = "5"
-  treat_missing_data 		    = "notBreaching"
-  period                    = "60"
-  threshold                 = "600000000"
-  statistic                 = "Average"
-  unit						          = "Count"
-  alarm_actions				      = [aws_sns_topic.default_s[0].arn]
-  namespace                 = "AWS/RDS"
-  dimensions                = {
-        DBClusterIdentifier = "${aws_rds_cluster.secondary[0].id}"
-        Role                = "WRITER"
-      }
+  count               = (var.engine == "aurora-postgresql") && var.setup_globaldb ? 1 : 0
+  provider            = aws.secondary
+  alarm_name          = "PG_MaxUsedTxIDs-${aws_rds_cluster.secondary[0].id}"
+  alarm_description   = "This metric monitors Aurora PostgreSQL Max Used Tx IDs"
+  metric_name         = "MaximumUsedTransactionIDs"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = "5"
+  treat_missing_data  = "notBreaching"
+  period              = "60"
+  threshold           = "600000000"
+  statistic           = "Average"
+  unit				  = "Count"
+  alarm_actions		  = [aws_sns_topic.default_s[0].arn]
+  namespace           = "AWS/RDS"
+  dimensions          = {
+    DBClusterIdentifier = "${aws_rds_cluster.secondary[0].id}"
+    Role                = "WRITER"
+  }
 }
