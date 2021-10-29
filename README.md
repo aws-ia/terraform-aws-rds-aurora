@@ -14,9 +14,9 @@ To deploy the Terraform Amazon Aurora module, do the following:
 1. Install Terraform. For instructions and a video tutorial, see [Install Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli). 
 
 2. Sign up and log into [Terraform Cloud](https://www.terraform.io/cloud) (There is a free tier available).
-   1.  Create a Terraform organization
+   1.  Create a [Terraform organization](https://www.terraform.io/docs/cloud/users-teams-organizations/organizations.html#creating-organizations).
 
-3. Configure Terraform Cloud API access. Run the following to generate a Terraform Cloud token from the command line interface:
+3. Configure [Terraform Cloud API access](https://learn.hashicorp.com/tutorials/terraform/cloud-login). Run the following to generate a Terraform Cloud token from the command line interface:
    ```
    terraform login
 
@@ -27,7 +27,7 @@ To deploy the Terraform Amazon Aurora module, do the following:
    export TERRAFORM_CONFIG="$HOME/AppData/Roaming/terraform.d/credentials.tfrc.json"
    ```
 
-4. Configure the AWS Command Line Interface (AWS CLI). For more information, see [Configuring the AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
+4. [Install](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) and [configure](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html) the AWS Command Line Interface (AWS CLI).
 
 5. If you don't have git installed, [install git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git). 
 
