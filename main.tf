@@ -5,6 +5,12 @@
 terraform {
   required_version = ">= 1.0.0"
   backend "remote" {}
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 3.64.0"
+    }
+  }
 }
 
 provider "aws" {
@@ -63,6 +69,19 @@ data "aws_partition" "current" {}
 resource "random_password" "master_password" {
   length  = 10
   special = false
+}
+
+####################################
+# Generate Final snapshot identifier
+####################################
+
+resource "random_id" "snapshot_id" {
+  
+  keepers = {
+    id = var.identifier
+  }
+
+  byte_length = 4
 }
 
 ###########
@@ -141,29 +160,31 @@ resource "aws_rds_global_cluster" "globaldb" {
 }
 
 resource "aws_rds_cluster" "primary" {
-  provider                        = aws.primary
-  global_cluster_identifier       = var.setup_globaldb ? aws_rds_global_cluster.globaldb[0].id : null
-  cluster_identifier              = "${var.identifier}-${var.region}"
-  engine                          = var.engine
-  engine_version                  = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
-  availability_zones              = [data.aws_availability_zones.region_p.names[0], data.aws_availability_zones.region_p.names[1], data.aws_availability_zones.region_p.names[2]]
-  db_subnet_group_name            = aws_db_subnet_group.private_p.name
-  port                            = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
-  database_name                   = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.database_name
-  master_username                 = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.username
-  master_password                 = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : (var.password == "" ? random_password.master_password.result : var.password)
-  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.aurora_cluster_parameter_group_p.id
-  backup_retention_period         = var.backup_retention_period
-  preferred_backup_window         = var.preferred_backup_window
-  storage_encrypted               = var.storage_encrypted
-  kms_key_id                      = var.storage_encrypted ? aws_kms_key.kms_p[0].arn : null
-  apply_immediately               = true
-  skip_final_snapshot             = var.skip_final_snapshot
-  final_snapshot_identifier       = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.region}-${md5(timestamp())}"
-  snapshot_identifier             = var.snapshot_identifier != "" ? var.snapshot_identifier : null
-  enabled_cloudwatch_logs_exports = local.logs_set
-  tags                            = var.tags
-  depends_on                      = [
+  provider                         = aws.primary
+  global_cluster_identifier        = var.setup_globaldb ? aws_rds_global_cluster.globaldb[0].id : null
+  cluster_identifier               = "${var.identifier}-${var.region}"
+  engine                           = var.engine
+  engine_version                   = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
+  allow_major_version_upgrade      = var.allow_major_version_upgrade
+  availability_zones               = [data.aws_availability_zones.region_p.names[0], data.aws_availability_zones.region_p.names[1], data.aws_availability_zones.region_p.names[2]]
+  db_subnet_group_name             = aws_db_subnet_group.private_p.name
+  port                             = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
+  database_name                    = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.database_name
+  master_username                  = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.username
+  master_password                  = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : (var.password == "" ? random_password.master_password.result : var.password)
+  db_cluster_parameter_group_name  = aws_rds_cluster_parameter_group.aurora_cluster_parameter_group_p.id
+  db_instance_parameter_group_name = var.allow_major_version_upgrade ? aws_db_parameter_group.aurora_db_parameter_group_p.id : null
+  backup_retention_period          = var.backup_retention_period
+  preferred_backup_window          = var.preferred_backup_window
+  storage_encrypted                = var.storage_encrypted
+  kms_key_id                       = var.storage_encrypted ? aws_kms_key.kms_p[0].arn : null
+  apply_immediately                = true
+  skip_final_snapshot              = var.skip_final_snapshot
+  final_snapshot_identifier        = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.region}-${random_id.snapshot_id.hex}"
+  snapshot_identifier              = var.snapshot_identifier != "" ? var.snapshot_identifier : null
+  enabled_cloudwatch_logs_exports  = local.logs_set
+  tags                             = var.tags
+  depends_on                       = [
     # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy
     # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destroy to work
     #aws_rds_cluster_instance.secondary,
@@ -195,26 +216,28 @@ resource "aws_rds_cluster_instance" "primary" {
 
 # Secondary Aurora Cluster
 resource "aws_rds_cluster" "secondary" {
-  count                           = var.setup_globaldb ? 1 : 0
-  provider                        = aws.secondary
-  global_cluster_identifier       = aws_rds_global_cluster.globaldb[0].id
-  cluster_identifier              = "${var.identifier}-${var.sec_region}"
-  engine                          = var.engine
-  engine_version                  = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
-  availability_zones              = [data.aws_availability_zones.region_s.names[0], data.aws_availability_zones.region_s.names[1], data.aws_availability_zones.region_s.names[2]]
-  db_subnet_group_name            = aws_db_subnet_group.private_s[0].name
-  port                            = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
-  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.aurora_cluster_parameter_group_s[0].id
-  backup_retention_period         = var.backup_retention_period
-  preferred_backup_window         = var.preferred_backup_window
-  source_region                   = var.storage_encrypted ? var.region : null
-  kms_key_id                      = var.storage_encrypted ? aws_kms_key.kms_s[0].arn : null
-  apply_immediately               = true
-  skip_final_snapshot             = var.skip_final_snapshot
-  final_snapshot_identifier       = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.sec_region}-${md5(timestamp())}"
-  enabled_cloudwatch_logs_exports = local.logs_set
-  tags                            = var.tags
-  depends_on                      = [
+  count                            = var.setup_globaldb ? 1 : 0
+  provider                         = aws.secondary
+  global_cluster_identifier        = aws_rds_global_cluster.globaldb[0].id
+  cluster_identifier               = "${var.identifier}-${var.sec_region}"
+  engine                           = var.engine
+  engine_version                   = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
+  allow_major_version_upgrade      = var.allow_major_version_upgrade
+  availability_zones               = [data.aws_availability_zones.region_s.names[0], data.aws_availability_zones.region_s.names[1], data.aws_availability_zones.region_s.names[2]]
+  db_subnet_group_name             = aws_db_subnet_group.private_s[0].name
+  port                             = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
+  db_cluster_parameter_group_name  = aws_rds_cluster_parameter_group.aurora_cluster_parameter_group_s[0].id
+  db_instance_parameter_group_name = var.allow_major_version_upgrade ? aws_db_parameter_group.aurora_db_parameter_group_s[0].id : null
+  backup_retention_period          = var.backup_retention_period
+  preferred_backup_window          = var.preferred_backup_window
+  source_region                    = var.storage_encrypted ? var.region : null
+  kms_key_id                       = var.storage_encrypted ? aws_kms_key.kms_s[0].arn : null
+  apply_immediately                = true
+  skip_final_snapshot              = var.skip_final_snapshot
+  final_snapshot_identifier        = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.sec_region}-${random_id.snapshot_id.hex}"
+  enabled_cloudwatch_logs_exports  = local.logs_set
+  tags                             = var.tags
+  depends_on                       = [
     # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy
     # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destroy to work
     aws_rds_cluster_instance.primary,
@@ -251,7 +274,7 @@ resource "aws_rds_cluster_instance" "secondary" {
 
 resource "aws_rds_cluster_parameter_group" "aurora_cluster_parameter_group_p" {
   provider    = aws.primary
-  name        = "${var.name}-cluster-parameter-group"
+  name_prefix = "${var.name}-cluster-"
   family      = data.aws_rds_engine_version.family.parameter_group_family
   description = "aurora-cluster-parameter-group"
 
@@ -265,11 +288,14 @@ resource "aws_rds_cluster_parameter_group" "aurora_cluster_parameter_group_p" {
       apply_method = pblock.value.apply_method
     }
   }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_db_parameter_group" "aurora_db_parameter_group_p" {
   provider    = aws.primary
-  name        = "${var.name}-db-parameter-group"
+  name_prefix = "${var.name}-db-"
   family      = data.aws_rds_engine_version.family.parameter_group_family
   description = "aurora-db-parameter-group"
 
@@ -283,12 +309,15 @@ resource "aws_db_parameter_group" "aurora_db_parameter_group_p" {
       apply_method = pblock.value.apply_method
     }
   }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_rds_cluster_parameter_group" "aurora_cluster_parameter_group_s" {
   count       = var.setup_globaldb ? 1 : 0
   provider    = aws.secondary
-  name        = "${var.name}-cluster-parameter-group"
+  name_prefix = "${var.name}-cluster-"
   family      = data.aws_rds_engine_version.family.parameter_group_family
   description = "aurora-cluster-parameter-group"
 
@@ -302,12 +331,15 @@ resource "aws_rds_cluster_parameter_group" "aurora_cluster_parameter_group_s" {
       apply_method = pblock.value.apply_method
     }
   }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_db_parameter_group" "aurora_db_parameter_group_s" {
   count       = var.setup_globaldb ? 1 : 0
   provider    = aws.secondary
-  name        = "${var.name}-db-parameter-group"
+  name_prefix = "${var.name}-db-"
   family      = data.aws_rds_engine_version.family.parameter_group_family
   description = "aurora-db-parameter-group"
 
@@ -320,6 +352,9 @@ resource "aws_db_parameter_group" "aurora_db_parameter_group_s" {
       value        = pblock.value.value
       apply_method = pblock.value.apply_method
     }
+  }
+  lifecycle {
+    create_before_destroy = true
   }
 }
 

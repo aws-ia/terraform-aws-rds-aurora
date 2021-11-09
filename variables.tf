@@ -113,6 +113,12 @@ variable "auto_minor_version_upgrade" {
   default     = true
 }
 
+variable "allow_major_version_upgrade" {
+  description = "Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`"
+  type        = bool
+  default     = true
+}
+
 variable "storage_encrypted" {
   description = "Specifies whether the underlying Aurora storage layer should be encrypted"
   type        = bool
