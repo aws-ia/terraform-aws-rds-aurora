@@ -1,11 +1,12 @@
 terraform {
   required_version = ">= 1.0.0"
 }
+
 locals {
   dir_down = ".."
 }
 
-# Generate new terraform org and workspace
+# Generate new Terraform org and workspace
 
 module "tfcloud" {
   source                = "aws-ia/cloud_workspace/hashicorp"
@@ -44,7 +45,7 @@ output "user_instructions" {
 
 
 # Run these commands in order:
-cd ${local.dir_down}${var.working_directory}
+  cd ${local.dir_down}${var.working_directory}
 
 # Configure your tfvars file
   AWS_SECRET_ACCESS_KEY = "*****************"
@@ -52,10 +53,10 @@ cd ${local.dir_down}${var.working_directory}
   AWS_SESSION_TOKEN     = "*****************"
   region                = ${var.region}
 
-#  Note: Use of STS Creds are highly reccommended!
-# !!!!CAUTION!!!!: Make sure your credentials are secured outside version control 
-# (and follow secrets mangement bestpractices)
-#   
+# Note: Use of STS Creds are highly recommended!
+# !!!!CAUTION!!!!: Make sure your credential are secured outside version control
+# (and follow secrets management best practices)
+#
    terraform apply  -var-file="$HOME/.aws/terraform.tfvars"
 README
 }

@@ -36,3 +36,6 @@ terraform.rc
 .terraform.lock.hcl
 
 backend.hcl
+
+# vscode directory
+.vscode/*

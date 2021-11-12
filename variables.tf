@@ -1,11 +1,11 @@
 variable "region" {
   type        = string
-  description = "The name of the primary region you wish to deploy into"
+  description = "The name of the primary AWS region you wish to deploy into"
 }
 
 variable "sec_region" {
   type        = string
-  description = "The name of the secondary region you wish to deploy into"
+  description = "The name of the secondary AWS region you wish to deploy into"
 }
 
 variable "identifier" {
@@ -43,6 +43,16 @@ variable "allowed_security_groups" {
   default     = []
 }
 
+variable "primary_instance_count" {
+  description = "instance count for primary Aurora cluster"
+  default = 2
+}
+
+variable "secondary_instance_count" {
+  description = "instance count for secondary Aurora cluster"
+  default = 1
+}
+
 variable "instance_class" {
   type        = string
   description = "Instance type to use at replica instance"
@@ -50,10 +60,16 @@ variable "instance_class" {
 }
 
 variable "skip_final_snapshot" {
-  type        = string
+  type        = bool
   description = "skip creating a final snapshot before deleting the DB"
-  #set the value to false for actual workload
-  default = true
+  #set the value to false for production workload
+  default     = true
+}
+
+variable "final_snapshot_identifier_prefix" {
+  description = "The prefix name to use when creating a final snapshot on cluster destroy, appends a random 8 digits to name to ensure it's unique too."
+  type        = string
+  default     = "final"
 }
 
 variable "database_name" {
@@ -71,12 +87,6 @@ variable "username" {
 variable "password" {
   description = "Master DB password"
   type        = string
-}
-
-variable "final_snapshot_identifier_prefix" {
-  description = "The prefix name to use when creating a final snapshot on cluster destroy, appends a random 8 digits to name to ensure it's unique too."
-  type        = string
-  default     = "final"
 }
 
 variable "backup_retention_period" {
@@ -103,8 +113,14 @@ variable "auto_minor_version_upgrade" {
   default     = true
 }
 
+variable "allow_major_version_upgrade" {
+  description = "Enable to allow major engine version upgrades when changing engine versions. Defaults to `false`"
+  type        = bool
+  default     = true
+}
+
 variable "storage_encrypted" {
-  description = "Specifies whether the underlying storage layer should be encrypted"
+  description = "Specifies whether the underlying Aurora storage layer should be encrypted"
   type        = bool
   default     = false
 }
@@ -118,17 +134,23 @@ variable "engine" {
 variable "engine_version_pg" {
   description = "Aurora database engine version."
   type        = string
-  default     = "12.4"
+  default     = "13.3"
 }
 
 variable "engine_version_mysql" {
   description = "Aurora database engine version."
   type        = string
-  default     = "5.7.mysql_aurora.2.10.0"
+  default     = "5.7.mysql_aurora.2.10.1"
 }
 
 variable "setup_globaldb" {
   description = "Setup Aurora Global Database with 1 Primary and 1 X-region Secondary cluster"
+  type        = bool
+  default     = false
+}
+
+variable "setup_as_secondary" {
+  description = "Setup aws_rds_cluster.primary Terraform resource as Secondary Aurora cluster after an unplanned Aurora Global DB failover"
   type        = bool
   default     = false
 }
@@ -154,5 +176,40 @@ variable "monitoring_interval" {
   validation {
     condition     = contains([0, 1, 5, 10, 15, 30, 60], var.monitoring_interval)
     error_message = "Valid values for var: monitoring_interval are (0, 1, 5, 10, 15, 30, 60)."
-  }
+  } 
+}
+
+variable "snapshot_identifier" {
+  description = "id of snapshot to restore. If you do not want to restore a db, leave the default empty string."
+  default     = ""
+}
+
+variable "enable_audit_log" {
+  description = "Enable MySQL audit log export to Amazon Cloudwatch."
+  type        = bool
+  default     = false
+}
+
+variable "enable_error_log" {
+  description = "Enable MySQL error log export to Amazon Cloudwatch."
+  type        = bool
+  default     = false
+}
+
+variable "enable_general_log" {
+  description = "Enable MySQL general log export to Amazon Cloudwatch."
+  type        = bool
+  default     = false
+}
+
+variable "enable_slowquery_log" {
+  description = "Enable MySQL slowquery log export to Amazon Cloudwatch."
+  type        = bool
+  default     = false
+}
+
+variable "enable_postgresql_log" {
+  description = "Enable PostgreSQL log export to Amazon Cloudwatch."
+  type        = bool
+  default     = false
 }
