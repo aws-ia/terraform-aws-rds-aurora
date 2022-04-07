@@ -8,7 +8,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 3.64.0"
+      version = ">= 4.8.0"
     }
   }
 }
@@ -192,6 +192,9 @@ resource "aws_rds_cluster" "primary" {
   lifecycle {
     ignore_changes = [
       replication_source_identifier,
+      # Since Terraform doesn't allow to conditionally specify a lifecycle policy, this can't be done dynamically.
+      # Uncomment the following line for Aurora Global Database to do major version upgrade as per https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_global_cluster
+      # engine_version,
     ]
   }
 }
@@ -245,6 +248,9 @@ resource "aws_rds_cluster" "secondary" {
   lifecycle {
     ignore_changes = [
       replication_source_identifier,
+      # Since Terraform doesn't allow to conditionally specify a lifecycle policy, this can't be done dynamically.
+      # Uncomment the following line for Aurora Global Database to do major version upgrade as per https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_global_cluster
+      # engine_version,
     ]
   }
 }
