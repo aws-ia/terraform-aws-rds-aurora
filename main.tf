@@ -8,7 +8,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 4.8.0"
+      version = ">= 3.64.0"
     }
   }
 }
@@ -192,9 +192,6 @@ resource "aws_rds_cluster" "primary" {
   lifecycle {
     ignore_changes = [
       replication_source_identifier,
-      # Since Terraform doesn't allow to conditionally specify a lifecycle policy, this can't be done dynamically.
-      # Uncomment the following line for Aurora Global Database to do major version upgrade as per https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_global_cluster
-      # engine_version,
     ]
   }
 }
@@ -248,9 +245,6 @@ resource "aws_rds_cluster" "secondary" {
   lifecycle {
     ignore_changes = [
       replication_source_identifier,
-      # Since Terraform doesn't allow to conditionally specify a lifecycle policy, this can't be done dynamically.
-      # Uncomment the following line for Aurora Global Database to do major version upgrade as per https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_global_cluster
-      # engine_version,
     ]
   }
 }
@@ -374,11 +368,11 @@ resource "aws_sns_topic" "default_p" {
 }
 
 resource "aws_db_event_subscription" "default_p" {
-  provider         = aws.primary
-  name             = "${var.name}-rds-event-sub"
-  sns_topic        = aws_sns_topic.default_p.arn
-  source_type      = "db-cluster"
-  source_ids       = [aws_rds_cluster.primary.id]
+  provider    = aws.primary
+  name        = "${var.name}-rds-event-sub"
+  sns_topic   = aws_sns_topic.default_p.arn
+  source_type = "db-cluster"
+  source_ids  = [aws_rds_cluster.primary.id]
   event_categories = [
     "creation",
     "deletion",
@@ -396,12 +390,12 @@ resource "aws_sns_topic" "default_s" {
 }
 
 resource "aws_db_event_subscription" "default_s" {
-  count            = var.setup_globaldb ? 1 : 0
-  provider         = aws.secondary
-  name             = "${var.name}-rds-event-sub"
-  sns_topic        = aws_sns_topic.default_s[0].arn
-  source_type      = "db-cluster"
-  source_ids       = [aws_rds_cluster.secondary[0].id]
+  count       = var.setup_globaldb ? 1 : 0
+  provider    = aws.secondary
+  name        = "${var.name}-rds-event-sub"
+  sns_topic   = aws_sns_topic.default_s[0].arn
+  source_type = "db-cluster"
+  source_ids  = [aws_rds_cluster.secondary[0].id]
   event_categories = [
     "creation",
     "deletion",
