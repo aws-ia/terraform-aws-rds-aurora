@@ -156,6 +156,7 @@ resource "aws_rds_global_cluster" "globaldb" {
   global_cluster_identifier = "${var.identifier}-globaldb"
   engine                    = var.engine
   engine_version            = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
+  database_name             = (var.snapshot_identifier != "") ? null : var.database_name
   storage_encrypted         = var.storage_encrypted
 }
 
