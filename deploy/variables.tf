@@ -1,11 +1,11 @@
 variable "region" {
   description = "The name of the primary AWS region you wish to deploy into"
-  default = "us-east-2"
+  default     = "us-east-2"
 }
 
 variable "sec_region" {
   description = "The name of the secondary AWS region you wish to deploy into"
-  default = "us-west-2"
+  default     = "us-west-2"
 }
 
 variable "namespace" {
@@ -77,7 +77,7 @@ variable "monitoring_interval" {
   validation {
     condition     = contains([0, 1, 5, 10, 15, 30, 60], var.monitoring_interval)
     error_message = "Valid values for var: monitoring_interval are (0, 1, 5, 10, 15, 30, 60)."
-  } 
+  }
 }
 
 variable "snapshot_identifier" {
@@ -93,10 +93,10 @@ variable "storage_encrypted" {
 
 variable "primary_instance_count" {
   description = "instance count for primary Aurora cluster"
-  default = 2
+  default     = 2
 }
 
 variable "secondary_instance_count" {
   description = "instance count for secondary Aurora cluster"
-  default = 1
+  default     = 1
 }

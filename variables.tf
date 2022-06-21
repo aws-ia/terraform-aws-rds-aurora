@@ -45,12 +45,12 @@ variable "allowed_security_groups" {
 
 variable "primary_instance_count" {
   description = "instance count for primary Aurora cluster"
-  default = 2
+  default     = 2
 }
 
 variable "secondary_instance_count" {
   description = "instance count for secondary Aurora cluster"
-  default = 1
+  default     = 1
 }
 
 variable "instance_class" {
@@ -63,7 +63,7 @@ variable "skip_final_snapshot" {
   type        = bool
   description = "skip creating a final snapshot before deleting the DB"
   #set the value to false for production workload
-  default     = true
+  default = true
 }
 
 variable "final_snapshot_identifier_prefix" {
@@ -176,7 +176,7 @@ variable "monitoring_interval" {
   validation {
     condition     = contains([0, 1, 5, 10, 15, 30, 60], var.monitoring_interval)
     error_message = "Valid values for var: monitoring_interval are (0, 1, 5, 10, 15, 30, 60)."
-  } 
+  }
 }
 
 variable "snapshot_identifier" {

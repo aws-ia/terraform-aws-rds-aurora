@@ -67,9 +67,9 @@ module "aurora_vpc_s" {
 ######################################
 
 module "aurora" {
-  source                   = "../"
-  region                   = var.region
-  sec_region               = var.sec_region
+  source     = "../"
+  region     = var.region
+  sec_region = var.sec_region
   #vpc_id                  = module.aurora_vpc.vpc_id
   Private_subnet_ids_p     = [module.aurora_vpc_p.private_subnet_1a_id, module.aurora_vpc_p.private_subnet_2a_id, module.aurora_vpc_p.private_subnet_3a_id]
   Private_subnet_ids_s     = var.setup_globaldb ? [module.aurora_vpc_s.private_subnet_1a_id, module.aurora_vpc_s.private_subnet_2a_id, module.aurora_vpc_s.private_subnet_3a_id] : null

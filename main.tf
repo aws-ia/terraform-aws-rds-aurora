@@ -76,7 +76,7 @@ resource "random_password" "master_password" {
 ####################################
 
 resource "random_id" "snapshot_id" {
-  
+
   keepers = {
     id = var.identifier
   }
@@ -92,7 +92,7 @@ resource "aws_db_subnet_group" "private_p" {
   provider   = aws.primary
   name       = "${var.name}-sg"
   subnet_ids = var.Private_subnet_ids_p
-  tags       = {
+  tags = {
     Name = "My DB subnet group"
   }
 }
@@ -102,7 +102,7 @@ resource "aws_db_subnet_group" "private_s" {
   count      = var.setup_globaldb ? 1 : 0
   name       = "${var.name}-sg"
   subnet_ids = var.Private_subnet_ids_s
-  tags       = {
+  tags = {
     Name = "My DB subnet group"
   }
 }
@@ -185,7 +185,7 @@ resource "aws_rds_cluster" "primary" {
   snapshot_identifier              = var.snapshot_identifier != "" ? var.snapshot_identifier : null
   enabled_cloudwatch_logs_exports  = local.logs_set
   tags                             = var.tags
-  depends_on                       = [
+  depends_on = [
     # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy
     # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destroy to work
     #aws_rds_cluster_instance.secondary,
@@ -241,7 +241,7 @@ resource "aws_rds_cluster" "secondary" {
   final_snapshot_identifier        = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.sec_region}-${random_id.snapshot_id.hex}"
   enabled_cloudwatch_logs_exports  = local.logs_set
   tags                             = var.tags
-  depends_on                       = [
+  depends_on = [
     # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy
     # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destroy to work
     aws_rds_cluster_instance.primary,
@@ -290,8 +290,8 @@ resource "aws_rds_cluster_parameter_group" "aurora_cluster_parameter_group_p" {
     iterator = pblock
 
     content {
-      name  	   = pblock.value.name
-      value 	   = pblock.value.value
+      name         = pblock.value.name
+      value        = pblock.value.value
       apply_method = pblock.value.apply_method
     }
   }
@@ -425,10 +425,10 @@ resource "aws_cloudwatch_metric_alarm" "cpu_util_p" {
   period              = "60"
   threshold           = "80"
   statistic           = "Maximum"
-  unit				  = "Percent"
-  alarm_actions		  = [aws_sns_topic.default_p.arn]
+  unit                = "Percent"
+  alarm_actions       = [aws_sns_topic.default_p.arn]
   namespace           = "AWS/RDS"
-  dimensions          = {
+  dimensions = {
     DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
   }
 }
@@ -445,10 +445,10 @@ resource "aws_cloudwatch_metric_alarm" "free_local_storage_p" {
   period              = "60"
   threshold           = "5368709120"
   statistic           = "Average"
-  unit				  = "Bytes"
-  alarm_actions		  = [aws_sns_topic.default_p.arn]
+  unit                = "Bytes"
+  alarm_actions       = [aws_sns_topic.default_p.arn]
   namespace           = "AWS/RDS"
-  dimensions          = {
+  dimensions = {
     DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
   }
 }
@@ -465,10 +465,10 @@ resource "aws_cloudwatch_metric_alarm" "free_random_access_memory_p" {
   period              = "60"
   threshold           = "2147483648"
   statistic           = "Average"
-  unit				  = "Bytes"
-  alarm_actions		  = [aws_sns_topic.default_p.arn]
+  unit                = "Bytes"
+  alarm_actions       = [aws_sns_topic.default_p.arn]
   namespace           = "AWS/RDS"
-  dimensions          = {
+  dimensions = {
     DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
   }
 }
@@ -485,10 +485,10 @@ resource "aws_cloudwatch_metric_alarm" "PG_MaxUsedTxIDs_p" {
   period              = "60"
   threshold           = "600000000"
   statistic           = "Average"
-  unit				  = "Count"
-  alarm_actions		  = [aws_sns_topic.default_p.arn]
+  unit                = "Count"
+  alarm_actions       = [aws_sns_topic.default_p.arn]
   namespace           = "AWS/RDS"
-  dimensions          = {
+  dimensions = {
     DBClusterIdentifier = "${aws_rds_cluster.primary.id}"
     Role                = "WRITER"
   }
@@ -506,10 +506,10 @@ resource "aws_cloudwatch_metric_alarm" "cpu_util_s" {
   period              = "60"
   threshold           = "80"
   statistic           = "Maximum"
-  unit				  = "Percent"
-  alarm_actions		  = [aws_sns_topic.default_s[0].arn]
+  unit                = "Percent"
+  alarm_actions       = [aws_sns_topic.default_s[0].arn]
   namespace           = "AWS/RDS"
-  dimensions          = {
+  dimensions = {
     DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
   }
 }
@@ -526,10 +526,10 @@ resource "aws_cloudwatch_metric_alarm" "free_local_storage_s" {
   period              = "60"
   threshold           = "5368709120"
   statistic           = "Average"
-  unit				  = "Bytes"
-  alarm_actions		  = [aws_sns_topic.default_s[0].arn]
+  unit                = "Bytes"
+  alarm_actions       = [aws_sns_topic.default_s[0].arn]
   namespace           = "AWS/RDS"
-  dimensions          = {
+  dimensions = {
     DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
   }
 }
@@ -546,10 +546,10 @@ resource "aws_cloudwatch_metric_alarm" "free_random_access_memory_s" {
   period              = "60"
   threshold           = "2147483648"
   statistic           = "Average"
-  unit				  = "Bytes"
-  alarm_actions		  = [aws_sns_topic.default_s[0].arn]
+  unit                = "Bytes"
+  alarm_actions       = [aws_sns_topic.default_s[0].arn]
   namespace           = "AWS/RDS"
-  dimensions          = {
+  dimensions = {
     DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
   }
 }
@@ -566,10 +566,10 @@ resource "aws_cloudwatch_metric_alarm" "PG_MaxUsedTxIDs_s" {
   period              = "60"
   threshold           = "600000000"
   statistic           = "Average"
-  unit				  = "Count"
-  alarm_actions		  = [aws_sns_topic.default_s[0].arn]
+  unit                = "Count"
+  alarm_actions       = [aws_sns_topic.default_s[0].arn]
   namespace           = "AWS/RDS"
-  dimensions          = {
+  dimensions = {
     DBClusterIdentifier = "${aws_rds_cluster.secondary[0].id}"
     Role                = "WRITER"
   }
