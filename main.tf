@@ -177,6 +177,7 @@ resource "aws_rds_cluster" "primary" {
   db_instance_parameter_group_name = var.allow_major_version_upgrade ? aws_db_parameter_group.aurora_db_parameter_group_p.id : null
   backup_retention_period          = var.backup_retention_period
   preferred_backup_window          = var.preferred_backup_window
+  #tfsec:ignore:aws-rds-encrypt-cluster-storage-data
   storage_encrypted                = var.storage_encrypted
   kms_key_id                       = var.storage_encrypted ? aws_kms_key.kms_p[0].arn : null
   apply_immediately                = true
@@ -200,6 +201,7 @@ resource "aws_rds_cluster" "primary" {
   }
 }
 
+#tfsec:ignore:aws-rds-enable-performance-insights-encryption
 resource "aws_rds_cluster_instance" "primary" {
   count                        = var.primary_instance_count
   provider                     = aws.primary
@@ -369,6 +371,7 @@ resource "aws_db_parameter_group" "aurora_db_parameter_group_s" {
 # Monitoring
 ##############################
 
+#tfsec:ignore:aws-sns-enable-topic-encryption
 resource "aws_sns_topic" "default_p" {
   provider = aws.primary
   name     = "rds-events"
@@ -390,6 +393,7 @@ resource "aws_db_event_subscription" "default_p" {
   ]
 }
 
+#tfsec:ignore:aws-sns-enable-topic-encryption
 resource "aws_sns_topic" "default_s" {
   count    = var.setup_globaldb ? 1 : 0
   provider = aws.secondary
