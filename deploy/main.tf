@@ -66,6 +66,7 @@ module "aurora_vpc_s" {
 # Create Aurora DB
 ######################################
 
+#tfsec:ignore:aws-rds-enable-performance-insights-encryption tfsec:ignore:aws-rds-enable-performance-insights
 module "aurora" {
   source     = "../"
   region     = var.region

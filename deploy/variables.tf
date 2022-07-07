@@ -31,14 +31,17 @@ variable "username" {
   default     = "root"
 }
 
+#tfsec:ignore:general-secrets-no-plaintext-exposure
 variable "password" {
   default     = ""
   description = "If no password is provided, a random password will be generated"
 }
+
 variable "tags" {
   default     = {}
   description = "tags, which could be used for additional tags"
 }
+
 variable "engine" {
   description = "Aurora database engine type: aurora, aurora-mysql, aurora-postgresql"
   type        = string

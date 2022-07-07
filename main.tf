@@ -190,7 +190,7 @@ resource "aws_rds_cluster" "primary" {
   }
 }
 
-#tfsec:ignore:aws-rds-enable-performance-insights-encryption
+#tfsec:ignore:aws-rds-enable-performance-insights-encryption tfsec:ignore:aws-rds-enable-performance-insights
 resource "aws_rds_cluster_instance" "primary" {
   count                        = var.primary_instance_count
   provider                     = aws.primary
@@ -248,6 +248,7 @@ resource "aws_rds_cluster" "secondary" {
 }
 
 # Secondary Cluster Instances
+#tfsec:ignore:aws-rds-enable-performance-insights-encryption tfsec:ignore:aws-rds-enable-performance-insights
 resource "aws_rds_cluster_instance" "secondary" {
   count                        = var.setup_globaldb ? var.secondary_instance_count : 0
   provider                     = aws.secondary
