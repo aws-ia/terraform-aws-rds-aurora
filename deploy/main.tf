@@ -72,8 +72,8 @@ module "aurora" {
   region     = var.region
   sec_region = var.sec_region
   #vpc_id                  = module.aurora_vpc.vpc_id
-  Private_subnet_ids_p     = [module.aurora_vpc_p.private_subnet_1a_id, module.aurora_vpc_p.private_subnet_2a_id, module.aurora_vpc_p.private_subnet_3a_id]
-  Private_subnet_ids_s     = var.setup_globaldb ? [module.aurora_vpc_s.private_subnet_1a_id, module.aurora_vpc_s.private_subnet_2a_id, module.aurora_vpc_s.private_subnet_3a_id] : null
+  private_subnet_ids_p     = [module.aurora_vpc_p.private_subnet_1a_id, module.aurora_vpc_p.private_subnet_2a_id, module.aurora_vpc_p.private_subnet_3a_id]
+  private_subnet_ids_s     = var.setup_globaldb ? [module.aurora_vpc_s.private_subnet_1a_id, module.aurora_vpc_s.private_subnet_2a_id, module.aurora_vpc_s.private_subnet_3a_id] : null
   engine                   = var.engine
   engine_version_pg        = var.engine_version_pg
   engine_version_mysql     = var.engine_version_mysql

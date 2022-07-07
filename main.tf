@@ -80,7 +80,7 @@ resource "random_id" "snapshot_id" {
 resource "aws_db_subnet_group" "private_p" {
   provider   = aws.primary
   name       = "${var.name}-sg"
-  subnet_ids = var.Private_subnet_ids_p
+  subnet_ids = var.private_subnet_ids_p
   tags = {
     Name = "My DB subnet group"
   }
@@ -90,7 +90,7 @@ resource "aws_db_subnet_group" "private_s" {
   provider   = aws.secondary
   count      = var.setup_globaldb ? 1 : 0
   name       = "${var.name}-sg"
-  subnet_ids = var.Private_subnet_ids_s
+  subnet_ids = var.private_subnet_ids_s
   tags = {
     Name = "My DB subnet group"
   }
@@ -467,7 +467,7 @@ resource "aws_cloudwatch_metric_alarm" "free_random_access_memory_p" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "PG_MaxUsedTxIDs_p" {
+resource "aws_cloudwatch_metric_alarm" "pg_max_used_tx_ids_p" {
   count               = var.engine == "aurora-postgresql" ? 1 : 0
   provider            = aws.primary
   alarm_name          = "PG_MaxUsedTxIDs-${aws_rds_cluster.primary.id}"
@@ -548,7 +548,7 @@ resource "aws_cloudwatch_metric_alarm" "free_random_access_memory_s" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "PG_MaxUsedTxIDs_s" {
+resource "aws_cloudwatch_metric_alarm" "pg_max_used_tx_ids_s" {
   count               = (var.engine == "aurora-postgresql") && var.setup_globaldb ? 1 : 0
   provider            = aws.secondary
   alarm_name          = "PG_MaxUsedTxIDs-${aws_rds_cluster.secondary[0].id}"

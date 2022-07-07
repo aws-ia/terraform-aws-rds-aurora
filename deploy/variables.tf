@@ -85,6 +85,7 @@ variable "monitoring_interval" {
 
 variable "snapshot_identifier" {
   description = "id of snapshot to restore. If you do not want to restore a db, leave the default empty string."
+  type        = string
   default     = ""
 }
 
@@ -96,10 +97,12 @@ variable "storage_encrypted" {
 
 variable "primary_instance_count" {
   description = "instance count for primary Aurora cluster"
+  type        = number
   default     = 2
 }
 
 variable "secondary_instance_count" {
   description = "instance count for secondary Aurora cluster"
+  type        = number
   default     = 1
 }

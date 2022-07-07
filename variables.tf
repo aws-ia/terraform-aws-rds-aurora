@@ -27,29 +27,33 @@ variable "vpc_id" {
 }
 */
 
-variable "Private_subnet_ids_p" {
+variable "private_subnet_ids_p" {
   type        = list(string)
   description = "A list of private subnet IDs in your Primary AWS region VPC"
 }
 
-variable "Private_subnet_ids_s" {
+variable "private_subnet_ids_s" {
   type        = list(string)
   description = "A list of private subnet IDs in your Secondary AWS region VPC"
 }
 
+/*
 variable "allowed_security_groups" {
   description = "A list of Security Group ID's to allow access to."
   type        = list(string)
   default     = []
 }
+*/
 
 variable "primary_instance_count" {
   description = "instance count for primary Aurora cluster"
+  type        = number
   default     = 2
 }
 
 variable "secondary_instance_count" {
   description = "instance count for secondary Aurora cluster"
+  type        = number
   default     = 1
 }
 
@@ -155,11 +159,13 @@ variable "setup_as_secondary" {
   default     = false
 }
 
+/*
 variable "replica_scale_enabled" {
   description = "Whether to enable autoscaling for Aurora read replica auto scaling"
   type        = bool
   default     = false
 }
+*/
 
 variable "tags" {
   description = "A map of tags to add to all resources."
@@ -181,6 +187,7 @@ variable "monitoring_interval" {
 
 variable "snapshot_identifier" {
   description = "id of snapshot to restore. If you do not want to restore a db, leave the default empty string."
+  type        = string
   default     = ""
 }
 
