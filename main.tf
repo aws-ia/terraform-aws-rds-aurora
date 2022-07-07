@@ -167,14 +167,14 @@ resource "aws_rds_cluster" "primary" {
   backup_retention_period          = var.backup_retention_period
   preferred_backup_window          = var.preferred_backup_window
   #tfsec:ignore:aws-rds-encrypt-cluster-storage-data
-  storage_encrypted                = var.storage_encrypted
-  kms_key_id                       = var.storage_encrypted ? aws_kms_key.kms_p[0].arn : null
-  apply_immediately                = true
-  skip_final_snapshot              = var.skip_final_snapshot
-  final_snapshot_identifier        = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.region}-${random_id.snapshot_id.hex}"
-  snapshot_identifier              = var.snapshot_identifier != "" ? var.snapshot_identifier : null
-  enabled_cloudwatch_logs_exports  = local.logs_set
-  tags                             = var.tags
+  storage_encrypted               = var.storage_encrypted
+  kms_key_id                      = var.storage_encrypted ? aws_kms_key.kms_p[0].arn : null
+  apply_immediately               = true
+  skip_final_snapshot             = var.skip_final_snapshot
+  final_snapshot_identifier       = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.region}-${random_id.snapshot_id.hex}"
+  snapshot_identifier             = var.snapshot_identifier != "" ? var.snapshot_identifier : null
+  enabled_cloudwatch_logs_exports = local.logs_set
+  tags                            = var.tags
   depends_on = [
     # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy
     # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destroy to work
