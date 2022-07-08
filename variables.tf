@@ -27,30 +27,34 @@ variable "vpc_id" {
 }
 */
 
-variable "Private_subnet_ids_p" {
+variable "private_subnet_ids_p" {
   type        = list(string)
   description = "A list of private subnet IDs in your Primary AWS region VPC"
 }
 
-variable "Private_subnet_ids_s" {
+variable "private_subnet_ids_s" {
   type        = list(string)
   description = "A list of private subnet IDs in your Secondary AWS region VPC"
 }
 
+/*
 variable "allowed_security_groups" {
   description = "A list of Security Group ID's to allow access to."
   type        = list(string)
   default     = []
 }
+*/
 
 variable "primary_instance_count" {
   description = "instance count for primary Aurora cluster"
-  default = 2
+  type        = number
+  default     = 2
 }
 
 variable "secondary_instance_count" {
   description = "instance count for secondary Aurora cluster"
-  default = 1
+  type        = number
+  default     = 1
 }
 
 variable "instance_class" {
@@ -63,7 +67,7 @@ variable "skip_final_snapshot" {
   type        = bool
   description = "skip creating a final snapshot before deleting the DB"
   #set the value to false for production workload
-  default     = true
+  default = true
 }
 
 variable "final_snapshot_identifier_prefix" {
@@ -134,13 +138,13 @@ variable "engine" {
 variable "engine_version_pg" {
   description = "Aurora database engine version."
   type        = string
-  default     = "13.3"
+  default     = "13.6"
 }
 
 variable "engine_version_mysql" {
   description = "Aurora database engine version."
   type        = string
-  default     = "5.7.mysql_aurora.2.10.1"
+  default     = "5.7.mysql_aurora.2.10.2"
 }
 
 variable "setup_globaldb" {
@@ -155,11 +159,13 @@ variable "setup_as_secondary" {
   default     = false
 }
 
+/*
 variable "replica_scale_enabled" {
   description = "Whether to enable autoscaling for Aurora read replica auto scaling"
   type        = bool
   default     = false
 }
+*/
 
 variable "tags" {
   description = "A map of tags to add to all resources."
@@ -176,11 +182,12 @@ variable "monitoring_interval" {
   validation {
     condition     = contains([0, 1, 5, 10, 15, 30, 60], var.monitoring_interval)
     error_message = "Valid values for var: monitoring_interval are (0, 1, 5, 10, 15, 30, 60)."
-  } 
+  }
 }
 
 variable "snapshot_identifier" {
   description = "id of snapshot to restore. If you do not want to restore a db, leave the default empty string."
+  type        = string
   default     = ""
 }
 

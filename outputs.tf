@@ -1,4 +1,4 @@
-// aws_rds_cluster
+# aws_rds_cluster
 output "aurora_cluster_arn" {
   description = "The ARN of the Primary Aurora cluster"
   value       = aws_rds_cluster.primary.arn
@@ -50,7 +50,7 @@ output "aurora_cluster_hosted_zone_id" {
   value       = aws_rds_cluster.primary.hosted_zone_id
 }
 
-// aws_rds_cluster_instance
+# aws_rds_cluster_instance
 output "aurora_cluster_instance_endpoints" {
   description = "A list of all Primary Aurora cluster instance endpoints"
   value       = aws_rds_cluster_instance.primary.*.endpoint
