@@ -1,27 +1,33 @@
 variable "region" {
   description = "The name of the primary AWS region you wish to deploy into"
+  type        = string
   default     = "us-east-2"
 }
 
 variable "sec_region" {
   description = "The name of the secondary AWS region you wish to deploy into"
+  type        = string
   default     = "us-west-2"
 }
 
 variable "namespace" {
   description = "namespace, which could be your organiation name, e.g. amazon"
+  type        = string
   default     = "aws"
 }
 variable "env" {
   description = "environment, e.g. 'sit', 'uat', 'prod' etc"
+  type        = string
   default     = "dev"
 }
 variable "name" {
   description = "deployment name"
+  type        = string
   default     = "aurora"
 }
 variable "delimiter" {
   description = "delimiter, which could be used between name, namespace and env"
+  type        = string
   default     = "-"
 }
 
@@ -34,13 +40,16 @@ variable "username" {
 #tfsec:ignore:general-secrets-no-plaintext-exposure
 variable "password" {
   default     = ""
+  type        = string
   description = "If no password is provided, a random password will be generated"
 }
 
+/*
 variable "tags" {
   default     = {}
   description = "tags, which could be used for additional tags"
 }
+*/
 
 variable "engine" {
   description = "Aurora database engine type: aurora, aurora-mysql, aurora-postgresql"
@@ -52,13 +61,13 @@ variable "engine" {
 variable "engine_version_pg" {
   description = "Aurora PostgreSQL database engine version."
   type        = string
-  default     = "13.3"
+  default     = "13.6"
 }
 
 variable "engine_version_mysql" {
   description = "Aurora MySQL database engine version."
   type        = string
-  default     = "5.7.mysql_aurora.2.10.1"
+  default     = "5.7.mysql_aurora.2.10.2"
 }
 
 variable "setup_globaldb" {
