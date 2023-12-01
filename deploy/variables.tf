@@ -44,6 +44,24 @@ variable "password" {
   description = "If no password is provided, a random password will be generated"
 }
 
+variable "serverless_scaling" {
+  description = "Boolean to enable or disable Serverless v2 autoscaling for the cluster"
+  type    = bool
+  default = false
+}
+
+variable "min_capacity" {
+  description = "The minimum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster"
+  type        = string
+  default     = "1.0"
+}
+
+variable "max_capacity" {
+  description = "The maximum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster."
+  type        = string
+  default     = "2.0"
+}
+
 /*
 variable "tags" {
   default     = {}

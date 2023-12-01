@@ -142,12 +142,15 @@ No modules.
 | <a name="input_final_snapshot_identifier_prefix"></a> [final\_snapshot\_identifier\_prefix](#input\_final\_snapshot\_identifier\_prefix) | The prefix name to use when creating a final snapshot on cluster destroy, appends a random 8 digits to name to ensure it's unique too. | `string` | `"final"` | no |
 | <a name="input_identifier"></a> [identifier](#input\_identifier) | Cluster identifier | `string` | `"aurora"` | no |
 | <a name="input_instance_class"></a> [instance\_class](#input\_instance\_class) | Instance type to use at replica instance | `string` | `"db.r5.large"` | no |
+| <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Requires serverless\_scaling to be set to true. The maximum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster. | `string` | `"2.0"` | no |
+| <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | Requires serverless\_scaling to be set to true. The minimum number of Aurora capacity units (ACUs) for a DB instance in an Aurora Serverless v2 cluster | `string` | `"1.0"` | no |
 | <a name="input_monitoring_interval"></a> [monitoring\_interval](#input\_monitoring\_interval) | Enhanced Monitoring interval in seconds | `number` | `1` | no |
 | <a name="input_name"></a> [name](#input\_name) | Prefix for resource names | `string` | `"aurora"` | no |
 | <a name="input_port"></a> [port](#input\_port) | The port on which to accept connections | `string` | `""` | no |
 | <a name="input_preferred_backup_window"></a> [preferred\_backup\_window](#input\_preferred\_backup\_window) | When to perform DB backups | `string` | `"02:00-03:00"` | no |
 | <a name="input_primary_instance_count"></a> [primary\_instance\_count](#input\_primary\_instance\_count) | instance count for primary Aurora cluster | `number` | `2` | no |
 | <a name="input_secondary_instance_count"></a> [secondary\_instance\_count](#input\_secondary\_instance\_count) | instance count for secondary Aurora cluster | `number` | `1` | no |
+| <a name="input_serverless_scaling"></a> [serverless\_scaling](#input\_serverless\_scaling) | Boolean to enable or disable Serverless v2 autoscaling for the cluster | `bool` | `false` | no |
 | <a name="input_setup_as_secondary"></a> [setup\_as\_secondary](#input\_setup\_as\_secondary) | Setup aws\_rds\_cluster.primary Terraform resource as Secondary Aurora cluster after an unplanned Aurora Global DB failover | `bool` | `false` | no |
 | <a name="input_setup_globaldb"></a> [setup\_globaldb](#input\_setup\_globaldb) | Setup Aurora Global Database with 1 Primary and 1 X-region Secondary cluster | `bool` | `false` | no |
 | <a name="input_skip_final_snapshot"></a> [skip\_final\_snapshot](#input\_skip\_final\_snapshot) | skip creating a final snapshot before deleting the DB | `bool` | `true` | no |

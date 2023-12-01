@@ -150,18 +150,27 @@ resource "aws_rds_global_cluster" "globaldb" {
 }
 
 resource "aws_rds_cluster" "primary" {
-  provider                         = aws.primary
-  global_cluster_identifier        = var.setup_globaldb ? aws_rds_global_cluster.globaldb[0].id : null
-  cluster_identifier               = "${var.identifier}-${var.region}"
-  engine                           = var.engine
-  engine_version                   = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
-  allow_major_version_upgrade      = var.allow_major_version_upgrade
-  availability_zones               = [data.aws_availability_zones.region_p.names[0], data.aws_availability_zones.region_p.names[1], data.aws_availability_zones.region_p.names[2]]
-  db_subnet_group_name             = aws_db_subnet_group.private_p.name
-  port                             = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
-  database_name                    = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.database_name
-  master_username                  = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.username
-  master_password                  = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : (var.password == "" ? random_password.master_password.result : var.password)
+  provider                    = aws.primary
+  global_cluster_identifier   = var.setup_globaldb ? aws_rds_global_cluster.globaldb[0].id : null
+  cluster_identifier          = "${var.identifier}-${var.region}"
+  engine                      = var.engine
+  engine_version              = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
+  allow_major_version_upgrade = var.allow_major_version_upgrade
+  availability_zones          = [data.aws_availability_zones.region_p.names[0], data.aws_availability_zones.region_p.names[1], data.aws_availability_zones.region_p.names[2]]
+  db_subnet_group_name        = aws_db_subnet_group.private_p.name
+  port                        = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
+  database_name               = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.database_name
+  master_username             = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.username
+  master_password             = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : (var.password == "" ? random_password.master_password.result : var.password)
+
+  dynamic "serverlessv2_scaling_configuration" {
+    for_each = var.serverless_scaling ? [1] : []
+    content {
+      max_capacity = var.max_capacity
+      min_capacity = var.min_capacity
+    }
+  }
+
   db_cluster_parameter_group_name  = aws_rds_cluster_parameter_group.aurora_cluster_parameter_group_p.id
   db_instance_parameter_group_name = var.allow_major_version_upgrade ? aws_db_parameter_group.aurora_db_parameter_group_p.id : null
   backup_retention_period          = var.backup_retention_period
