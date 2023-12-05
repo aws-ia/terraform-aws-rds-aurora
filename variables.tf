@@ -220,3 +220,9 @@ variable "enable_postgresql_log" {
   type        = bool
   default     = false
 }
+
+variable "security_group_ids" {
+  description = "List of VPC security groups to associate with the Cluster"
+  type = list(string)
+  default = []
+}

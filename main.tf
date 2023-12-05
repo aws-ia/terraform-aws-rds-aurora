@@ -174,7 +174,9 @@ resource "aws_rds_cluster" "primary" {
   final_snapshot_identifier       = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.region}-${random_id.snapshot_id.hex}"
   snapshot_identifier             = var.snapshot_identifier != "" ? var.snapshot_identifier : null
   enabled_cloudwatch_logs_exports = local.logs_set
+  vpc_security_group_ids = length(var.security_group_ids) > 0 ? compact(distinct(var.security_group_ids)): null
   tags                            = var.tags
+
   depends_on = [
     # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy
     # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destroy to work
@@ -231,6 +233,7 @@ resource "aws_rds_cluster" "secondary" {
   skip_final_snapshot              = var.skip_final_snapshot
   final_snapshot_identifier        = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.sec_region}-${random_id.snapshot_id.hex}"
   enabled_cloudwatch_logs_exports  = local.logs_set
+  vpc_security_group_ids = length(var.security_group_ids) > 0 ? compact(distinct(var.security_group_ids)): null
   tags                             = var.tags
   depends_on = [
     # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy

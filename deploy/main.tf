@@ -58,6 +58,19 @@ module "aurora_vpc_s" {
 }
 
 ######################################
+# Security groups for for Aurora DB
+######################################
+
+resource "aws_default_security_group" "default_vpc_p" {
+  vpc_id = module.aurora_vpc_p.vpc_id
+}
+
+resource "aws_default_security_group" "default_vpc_s" {
+  count = var.setup_globaldb ? 1: 0
+  vpc_id = module.aurora_vpc_s.vpc_id
+}
+
+######################################
 # Create Aurora DB
 ######################################
 
@@ -82,4 +95,5 @@ module "aurora" {
   primary_instance_count   = var.primary_instance_count
   secondary_instance_count = var.secondary_instance_count
   snapshot_identifier      = var.snapshot_identifier
+  security_group_ids =  concat([ aws_default_security_group.default_vpc_p.id ],[try(aws_default_security_group.default_vpc_s[0].id,null)])
 }

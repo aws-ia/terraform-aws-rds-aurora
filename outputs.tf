@@ -60,3 +60,8 @@ output "aurora_cluster_instance_ids" {
   description = "A list of all Primary Aurora cluster instance ids"
   value       = aws_rds_cluster_instance.primary.*.id
 }
+
+output "aurora_cluster_security_group_ids" {
+  description = "A list of all security group ids associated with Aurora rds cluster"
+  value = try(aws_rds_cluster.primary.vpc_security_group_ids, [])
+}
