@@ -61,7 +61,7 @@ variable "engine" {
 variable "engine_version_pg" {
   description = "Aurora PostgreSQL database engine version."
   type        = string
-  default     = "13.6"
+  default     = "15.3"
 }
 
 variable "engine_version_mysql" {
