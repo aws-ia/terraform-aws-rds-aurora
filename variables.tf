@@ -221,8 +221,11 @@ variable "enable_postgresql_log" {
   default     = false
 }
 
-variable "security_group_ids" {
-  description = "List of VPC security groups to associate with the Cluster"
-  type = list(string)
-  default = []
+variable "security_group_ids_map" {
+  description = "Map of VPC security groups to associate with the Cluster"
+  type = object({
+    primary    = list(string)
+    secondary = list(string)
+  })
+  default = null
 }

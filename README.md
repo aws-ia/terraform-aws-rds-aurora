@@ -148,7 +148,7 @@ No modules.
 | <a name="input_preferred_backup_window"></a> [preferred\_backup\_window](#input\_preferred\_backup\_window) | When to perform DB backups | `string` | `"02:00-03:00"` | no |
 | <a name="input_primary_instance_count"></a> [primary\_instance\_count](#input\_primary\_instance\_count) | instance count for primary Aurora cluster | `number` | `2` | no |
 | <a name="input_secondary_instance_count"></a> [secondary\_instance\_count](#input\_secondary\_instance\_count) | instance count for secondary Aurora cluster | `number` | `1` | no |
-| <a name="input_security_group_ids"></a> [security\_group\_ids](#input\_security\_group\_ids) | List of VPC security groups to associate with the Cluster | `list(string)` | `[]` | no |
+| <a name="input_security_group_ids_map"></a> [security\_group\_ids\_map](#input\_security\_group\_ids\_map) | Map of VPC security groups to associate with the Cluster | <pre>object({<br>    primary    = list(string)<br>    secondary = list(string)<br>  })</pre> | `null` | no |
 | <a name="input_setup_as_secondary"></a> [setup\_as\_secondary](#input\_setup\_as\_secondary) | Setup aws\_rds\_cluster.primary Terraform resource as Secondary Aurora cluster after an unplanned Aurora Global DB failover | `bool` | `false` | no |
 | <a name="input_setup_globaldb"></a> [setup\_globaldb](#input\_setup\_globaldb) | Setup Aurora Global Database with 1 Primary and 1 X-region Secondary cluster | `bool` | `false` | no |
 | <a name="input_skip_final_snapshot"></a> [skip\_final\_snapshot](#input\_skip\_final\_snapshot) | skip creating a final snapshot before deleting the DB | `bool` | `true` | no |
