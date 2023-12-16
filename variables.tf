@@ -20,13 +20,6 @@ variable "name" {
   default     = "aurora"
 }
 
-/*
-variable "vpc_id" {
-  type        = string
-  description = "VPC id"
-}
-*/
-
 variable "private_subnet_ids_p" {
   type        = list(string)
   description = "A list of private subnet IDs in your Primary AWS region VPC"
@@ -59,8 +52,8 @@ variable "secondary_instance_count" {
 
 variable "instance_class" {
   type        = string
-  description = "Instance type to use at replica instance"
-  default     = "db.r5.large"
+  description = "Aurora DB Instance type. Specify db.serverless to create Aurora Serverless v2 instances."
+  default     = "db.r7g.large"
 }
 
 variable "skip_final_snapshot" {
@@ -91,6 +84,12 @@ variable "username" {
 variable "password" {
   description = "Master DB password"
   type        = string
+}
+
+variable "manage_master_user_password" {
+  description = "Manage master user password using AWS Secrets Manager"
+  type        = bool
+  default     = false
 }
 
 variable "backup_retention_period" {
@@ -129,6 +128,12 @@ variable "storage_encrypted" {
   default     = false
 }
 
+variable "storage_type" {
+  description = "Specifies Aurora storage type: Aurora Standard vs. Aurora I/O-Optimized"
+  type        = string
+  default     = ""
+}
+
 variable "engine" {
   description = "Aurora database engine type: aurora (for MySQL 5.6-compatible Aurora), aurora-mysql (for MySQL 5.7-compatible Aurora), aurora-postgresql"
   type        = string
@@ -138,13 +143,13 @@ variable "engine" {
 variable "engine_version_pg" {
   description = "Aurora database engine version."
   type        = string
-  default     = "13.6"
+  default     = "15.4"
 }
 
 variable "engine_version_mysql" {
   description = "Aurora database engine version."
   type        = string
-  default     = "5.7.mysql_aurora.2.10.2"
+  default     = "8.0.mysql_aurora.3.05.1"
 }
 
 variable "setup_globaldb" {
@@ -219,4 +224,16 @@ variable "enable_postgresql_log" {
   description = "Enable PostgreSQL log export to Amazon Cloudwatch."
   type        = bool
   default     = false
+}
+
+variable "serverless_v2_min_acu" {
+  description = "Aurora Serverless v2 Minimum ACU"
+  type        = number
+  default     = 0.5
+}
+
+variable "serverless_v2_max_acu" {
+  description = "Aurora Serverless v2 Maximum ACU"
+  type        = number
+  default     = 16
 }

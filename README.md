@@ -63,17 +63,17 @@ David Wright (dwright@hashicorp.com), Tony Vattahil (tonynv@amazon.com), Arabind
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.9.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.30 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | >= 2.2 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.9.0 |
-| <a name="provider_aws.primary"></a> [aws.primary](#provider\_aws.primary) | >= 4.9.0 |
-| <a name="provider_aws.secondary"></a> [aws.secondary](#provider\_aws.secondary) | >= 4.9.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.30 |
+| <a name="provider_aws.primary"></a> [aws.primary](#provider\_aws.primary) | >= 5.30 |
+| <a name="provider_aws.secondary"></a> [aws.secondary](#provider\_aws.secondary) | >= 5.30 |
 | <a name="provider_random"></a> [random](#provider\_random) | >= 2.2 |
 
 ## Modules
@@ -137,22 +137,26 @@ No modules.
 | <a name="input_enable_postgresql_log"></a> [enable\_postgresql\_log](#input\_enable\_postgresql\_log) | Enable PostgreSQL log export to Amazon Cloudwatch. | `bool` | `false` | no |
 | <a name="input_enable_slowquery_log"></a> [enable\_slowquery\_log](#input\_enable\_slowquery\_log) | Enable MySQL slowquery log export to Amazon Cloudwatch. | `bool` | `false` | no |
 | <a name="input_engine"></a> [engine](#input\_engine) | Aurora database engine type: aurora (for MySQL 5.6-compatible Aurora), aurora-mysql (for MySQL 5.7-compatible Aurora), aurora-postgresql | `string` | `"aurora-postgresql"` | no |
-| <a name="input_engine_version_mysql"></a> [engine\_version\_mysql](#input\_engine\_version\_mysql) | Aurora database engine version. | `string` | `"5.7.mysql_aurora.2.10.2"` | no |
-| <a name="input_engine_version_pg"></a> [engine\_version\_pg](#input\_engine\_version\_pg) | Aurora database engine version. | `string` | `"13.6"` | no |
+| <a name="input_engine_version_mysql"></a> [engine\_version\_mysql](#input\_engine\_version\_mysql) | Aurora database engine version. | `string` | `"8.0.mysql_aurora.3.05.1"` | no |
+| <a name="input_engine_version_pg"></a> [engine\_version\_pg](#input\_engine\_version\_pg) | Aurora database engine version. | `string` | `"15.4"` | no |
 | <a name="input_final_snapshot_identifier_prefix"></a> [final\_snapshot\_identifier\_prefix](#input\_final\_snapshot\_identifier\_prefix) | The prefix name to use when creating a final snapshot on cluster destroy, appends a random 8 digits to name to ensure it's unique too. | `string` | `"final"` | no |
 | <a name="input_identifier"></a> [identifier](#input\_identifier) | Cluster identifier | `string` | `"aurora"` | no |
-| <a name="input_instance_class"></a> [instance\_class](#input\_instance\_class) | Instance type to use at replica instance | `string` | `"db.r5.large"` | no |
+| <a name="input_instance_class"></a> [instance\_class](#input\_instance\_class) | Aurora DB Instance type. Specify db.serverless to create Aurora Serverless v2 instances. | `string` | `"db.r7g.large"` | no |
+| <a name="input_manage_master_user_password"></a> [manage\_master\_user\_password](#input\_manage\_master\_user\_password) | Manage master user password using AWS Secrets Manager | `bool` | `false` | no |
 | <a name="input_monitoring_interval"></a> [monitoring\_interval](#input\_monitoring\_interval) | Enhanced Monitoring interval in seconds | `number` | `1` | no |
 | <a name="input_name"></a> [name](#input\_name) | Prefix for resource names | `string` | `"aurora"` | no |
 | <a name="input_port"></a> [port](#input\_port) | The port on which to accept connections | `string` | `""` | no |
 | <a name="input_preferred_backup_window"></a> [preferred\_backup\_window](#input\_preferred\_backup\_window) | When to perform DB backups | `string` | `"02:00-03:00"` | no |
 | <a name="input_primary_instance_count"></a> [primary\_instance\_count](#input\_primary\_instance\_count) | instance count for primary Aurora cluster | `number` | `2` | no |
 | <a name="input_secondary_instance_count"></a> [secondary\_instance\_count](#input\_secondary\_instance\_count) | instance count for secondary Aurora cluster | `number` | `1` | no |
+| <a name="input_serverless_v2_max_acu"></a> [serverless\_v2\_max\_acu](#input\_serverless\_v2\_max\_acu) | Aurora Serverless v2 Maximum ACU | `number` | `16` | no |
+| <a name="input_serverless_v2_min_acu"></a> [serverless\_v2\_min\_acu](#input\_serverless\_v2\_min\_acu) | Aurora Serverless v2 Minimum ACU | `number` | `0.5` | no |
 | <a name="input_setup_as_secondary"></a> [setup\_as\_secondary](#input\_setup\_as\_secondary) | Setup aws\_rds\_cluster.primary Terraform resource as Secondary Aurora cluster after an unplanned Aurora Global DB failover | `bool` | `false` | no |
 | <a name="input_setup_globaldb"></a> [setup\_globaldb](#input\_setup\_globaldb) | Setup Aurora Global Database with 1 Primary and 1 X-region Secondary cluster | `bool` | `false` | no |
 | <a name="input_skip_final_snapshot"></a> [skip\_final\_snapshot](#input\_skip\_final\_snapshot) | skip creating a final snapshot before deleting the DB | `bool` | `true` | no |
 | <a name="input_snapshot_identifier"></a> [snapshot\_identifier](#input\_snapshot\_identifier) | id of snapshot to restore. If you do not want to restore a db, leave the default empty string. | `string` | `""` | no |
 | <a name="input_storage_encrypted"></a> [storage\_encrypted](#input\_storage\_encrypted) | Specifies whether the underlying Aurora storage layer should be encrypted | `bool` | `false` | no |
+| <a name="input_storage_type"></a> [storage\_type](#input\_storage\_type) | Specifies Aurora storage type: Aurora Standard vs. Aurora I/O-Optimized | `string` | `""` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to add to all resources. | `map(string)` | <pre>{<br>  "Name": "aurora-db"<br>}</pre> | no |
 | <a name="input_username"></a> [username](#input\_username) | Master DB username | `string` | `"root"` | no |
 
@@ -160,16 +164,25 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_aurora_cluster_arn"></a> [aurora\_cluster\_arn](#output\_aurora\_cluster\_arn) | The ARN of the Primary Aurora cluster |
 | <a name="output_aurora_cluster_database_name"></a> [aurora\_cluster\_database\_name](#output\_aurora\_cluster\_database\_name) | Name for an automatically created database on Aurora cluster creation |
-| <a name="output_aurora_cluster_endpoint"></a> [aurora\_cluster\_endpoint](#output\_aurora\_cluster\_endpoint) | Primary Aurora cluster endpoint |
-| <a name="output_aurora_cluster_hosted_zone_id"></a> [aurora\_cluster\_hosted\_zone\_id](#output\_aurora\_cluster\_hosted\_zone\_id) | Route53 hosted zone id of the Primary Aurora cluster |
-| <a name="output_aurora_cluster_id"></a> [aurora\_cluster\_id](#output\_aurora\_cluster\_id) | The ID of the Primary Aurora cluster |
-| <a name="output_aurora_cluster_instance_endpoints"></a> [aurora\_cluster\_instance\_endpoints](#output\_aurora\_cluster\_instance\_endpoints) | A list of all Primary Aurora cluster instance endpoints |
-| <a name="output_aurora_cluster_instance_ids"></a> [aurora\_cluster\_instance\_ids](#output\_aurora\_cluster\_instance\_ids) | A list of all Primary Aurora cluster instance ids |
 | <a name="output_aurora_cluster_master_password"></a> [aurora\_cluster\_master\_password](#output\_aurora\_cluster\_master\_password) | Aurora master User password |
 | <a name="output_aurora_cluster_master_username"></a> [aurora\_cluster\_master\_username](#output\_aurora\_cluster\_master\_username) | Aurora master username |
-| <a name="output_aurora_cluster_port"></a> [aurora\_cluster\_port](#output\_aurora\_cluster\_port) | Primary Aurora cluster endpoint port |
-| <a name="output_aurora_cluster_reader_endpoint"></a> [aurora\_cluster\_reader\_endpoint](#output\_aurora\_cluster\_reader\_endpoint) | Primary Aurora cluster reader endpoint |
-| <a name="output_aurora_cluster_resource_id"></a> [aurora\_cluster\_resource\_id](#output\_aurora\_cluster\_resource\_id) | The Cluster Resource ID of the Primary Aurora cluster |
+| <a name="output_primary_aurora_cluster_arn"></a> [primary\_aurora\_cluster\_arn](#output\_primary\_aurora\_cluster\_arn) | The ARN of the Primary Aurora cluster |
+| <a name="output_primary_aurora_cluster_endpoint"></a> [primary\_aurora\_cluster\_endpoint](#output\_primary\_aurora\_cluster\_endpoint) | Primary Aurora cluster endpoint |
+| <a name="output_primary_aurora_cluster_hosted_zone_id"></a> [primary\_aurora\_cluster\_hosted\_zone\_id](#output\_primary\_aurora\_cluster\_hosted\_zone\_id) | Route53 hosted zone id of the Primary Aurora cluster |
+| <a name="output_primary_aurora_cluster_id"></a> [primary\_aurora\_cluster\_id](#output\_primary\_aurora\_cluster\_id) | The ID of the Primary Aurora cluster |
+| <a name="output_primary_aurora_cluster_instance_endpoints"></a> [primary\_aurora\_cluster\_instance\_endpoints](#output\_primary\_aurora\_cluster\_instance\_endpoints) | A list of all Primary Aurora cluster instance endpoints |
+| <a name="output_primary_aurora_cluster_instance_ids"></a> [primary\_aurora\_cluster\_instance\_ids](#output\_primary\_aurora\_cluster\_instance\_ids) | A list of all Primary Aurora cluster instance ids |
+| <a name="output_primary_aurora_cluster_port"></a> [primary\_aurora\_cluster\_port](#output\_primary\_aurora\_cluster\_port) | Primary Aurora cluster endpoint port |
+| <a name="output_primary_aurora_cluster_reader_endpoint"></a> [primary\_aurora\_cluster\_reader\_endpoint](#output\_primary\_aurora\_cluster\_reader\_endpoint) | Primary Aurora cluster reader endpoint |
+| <a name="output_primary_aurora_cluster_resource_id"></a> [primary\_aurora\_cluster\_resource\_id](#output\_primary\_aurora\_cluster\_resource\_id) | The Cluster Resource ID of the Primary Aurora cluster |
+| <a name="output_secondary_aurora_cluster_arn"></a> [secondary\_aurora\_cluster\_arn](#output\_secondary\_aurora\_cluster\_arn) | The ARN of the Secondary Aurora cluster |
+| <a name="output_secondary_aurora_cluster_endpoint"></a> [secondary\_aurora\_cluster\_endpoint](#output\_secondary\_aurora\_cluster\_endpoint) | Secondary Aurora cluster endpoint |
+| <a name="output_secondary_aurora_cluster_hosted_zone_id"></a> [secondary\_aurora\_cluster\_hosted\_zone\_id](#output\_secondary\_aurora\_cluster\_hosted\_zone\_id) | Route53 hosted zone id of the Secondary Aurora cluster |
+| <a name="output_secondary_aurora_cluster_id"></a> [secondary\_aurora\_cluster\_id](#output\_secondary\_aurora\_cluster\_id) | The ID of the Secondary Aurora cluster |
+| <a name="output_secondary_aurora_cluster_instance_endpoints"></a> [secondary\_aurora\_cluster\_instance\_endpoints](#output\_secondary\_aurora\_cluster\_instance\_endpoints) | A list of all Secondary Aurora cluster instance endpoints |
+| <a name="output_secondary_aurora_cluster_instance_ids"></a> [secondary\_aurora\_cluster\_instance\_ids](#output\_secondary\_aurora\_cluster\_instance\_ids) | A list of all Secondary Aurora cluster instance ids |
+| <a name="output_secondary_aurora_cluster_port"></a> [secondary\_aurora\_cluster\_port](#output\_secondary\_aurora\_cluster\_port) | Secondary Aurora cluster endpoint port |
+| <a name="output_secondary_aurora_cluster_reader_endpoint"></a> [secondary\_aurora\_cluster\_reader\_endpoint](#output\_secondary\_aurora\_cluster\_reader\_endpoint) | Secondary Aurora cluster reader endpoint |
+| <a name="output_secondary_aurora_cluster_resource_id"></a> [secondary\_aurora\_cluster\_resource\_id](#output\_secondary\_aurora\_cluster\_resource\_id) | The Cluster Resource ID of the Secondary Aurora cluster |
 <!-- END_TF_DOCS -->

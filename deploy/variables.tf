@@ -10,6 +10,12 @@ variable "sec_region" {
   default     = "us-west-2"
 }
 
+variable "account" {
+  type        = string
+  description = "account, which could be AWS Account Name or Number"
+  default     = null
+}
+
 variable "namespace" {
   description = "namespace, which could be your organiation name, e.g. amazon"
   type        = string
@@ -20,11 +26,19 @@ variable "env" {
   type        = string
   default     = "dev"
 }
-variable "name" {
-  description = "deployment name"
+
+variable "identifier" {
+  description = "Cluster identifier"
   type        = string
   default     = "aurora"
 }
+
+variable "name" {
+  description = "Prefix for resource names"
+  type        = string
+  default     = "aurora"
+}
+
 variable "delimiter" {
   description = "delimiter, which could be used between name, namespace and env"
   type        = string
@@ -44,6 +58,12 @@ variable "password" {
   description = "If no password is provided, a random password will be generated"
 }
 
+variable "manage_master_user_password" {
+  description = "Manage master user password using AWS Secrets Manager"
+  type        = bool
+  default     = false
+}
+
 /*
 variable "tags" {
   default     = {}
@@ -61,13 +81,13 @@ variable "engine" {
 variable "engine_version_pg" {
   description = "Aurora PostgreSQL database engine version."
   type        = string
-  default     = "13.6"
+  default     = "15.4"
 }
 
 variable "engine_version_mysql" {
   description = "Aurora MySQL database engine version."
   type        = string
-  default     = "5.7.mysql_aurora.2.10.2"
+  default     = "8.0.mysql_aurora.3.05.1"
 }
 
 variable "setup_globaldb" {
@@ -104,6 +124,12 @@ variable "storage_encrypted" {
   default     = false
 }
 
+variable "storage_type" {
+  description = "Specifies Aurora storage type: Aurora Standard vs. Aurora I/O-Optimized"
+  type        = string
+  default     = ""
+}
+
 variable "primary_instance_count" {
   description = "instance count for primary Aurora cluster"
   type        = number
@@ -114,4 +140,10 @@ variable "secondary_instance_count" {
   description = "instance count for secondary Aurora cluster"
   type        = number
   default     = 1
+}
+
+variable "instance_class" {
+  type        = string
+  description = "Aurora DB Instance type. Specify db.serverless to create Aurora Serverless v2 instances."
+  default     = "db.r7g.large"
 }
