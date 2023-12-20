@@ -168,7 +168,7 @@ resource "aws_rds_cluster" "primary" {
   db_subnet_group_name        = aws_db_subnet_group.private_p.name
   port                        = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
   database_name               = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.database_name
-  # Aurora global DB currently doesnt support master password manager with AWS Secrets Manager
+  # Aurora global DB currently doesn't support master password management with AWS Secrets Manager
   manage_master_user_password      = !var.setup_globaldb && var.manage_master_user_password ? var.manage_master_user_password : null
   master_user_secret_kms_key_id    = !var.setup_globaldb && var.manage_master_user_password ? aws_kms_key.kms_p[0].arn : null
   master_username                  = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.username
