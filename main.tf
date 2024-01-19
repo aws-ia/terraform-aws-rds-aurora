@@ -102,8 +102,8 @@ resource "aws_db_subnet_group" "private_s" {
 
 resource "aws_kms_key" "kms_p" {
   provider    = aws.primary
-  count       = var.storage_encrypted ? 1 : 0
-  description = "KMS key for Aurora Storage Encryption"
+  count       = var.storage_encrypted || (!var.setup_globaldb && var.manage_master_user_password) ? 1 : 0
+  description = "KMS key for Aurora Storage Encryption and master user Secrets Manager secret"
   tags        = var.tags
   # following causes terraform destroy to fail. But this is needed so that Aurora encrypted snapshots can be restored for your production workload.
   lifecycle {
@@ -143,25 +143,36 @@ resource "aws_rds_global_cluster" "globaldb" {
   count                     = var.setup_globaldb ? 1 : 0
   provider                  = aws.primary
   global_cluster_identifier = "${var.identifier}-globaldb"
-  engine                    = var.engine
-  engine_version            = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
-  database_name             = (var.snapshot_identifier != "") ? null : var.database_name
+  engine                    = (var.snapshot_identifier == "") ? var.engine : null
+  engine_version            = (var.snapshot_identifier == "") ? (var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql) : null
+  database_name             = (var.snapshot_identifier == "") ? var.database_name : null
   storage_encrypted         = var.storage_encrypted
+  # Uncomment the following line for restoring cluster from snapshot. Conditionally specifying null for the argument still creating Terraform Cycle error.
+  # source_db_cluster_identifier = (var.snapshot_identifier == "") ? null : aws_rds_cluster.primary.arn
+  force_destroy = (var.snapshot_identifier == "") ? null : true
+
+  lifecycle {
+    ignore_changes = [source_db_cluster_identifier]
+  }
 }
 
 resource "aws_rds_cluster" "primary" {
-  provider                         = aws.primary
-  global_cluster_identifier        = var.setup_globaldb ? aws_rds_global_cluster.globaldb[0].id : null
-  cluster_identifier               = "${var.identifier}-${var.region}"
-  engine                           = var.engine
-  engine_version                   = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
-  allow_major_version_upgrade      = var.allow_major_version_upgrade
-  availability_zones               = [data.aws_availability_zones.region_p.names[0], data.aws_availability_zones.region_p.names[1], data.aws_availability_zones.region_p.names[2]]
-  db_subnet_group_name             = aws_db_subnet_group.private_p.name
-  port                             = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
-  database_name                    = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.database_name
+  provider = aws.primary
+  # Comment the following line for restoring cluster from snapshot. Conditionally specifying null for the argument still creating Terraform Cycle error.
+  global_cluster_identifier   = var.setup_globaldb && (var.snapshot_identifier == "") ? aws_rds_global_cluster.globaldb[0].id : null
+  cluster_identifier          = "${var.identifier}-${var.region}"
+  engine                      = var.engine
+  engine_version              = var.engine == "aurora-postgresql" ? var.engine_version_pg : var.engine_version_mysql
+  allow_major_version_upgrade = var.allow_major_version_upgrade
+  availability_zones          = [data.aws_availability_zones.region_p.names[0], data.aws_availability_zones.region_p.names[1], data.aws_availability_zones.region_p.names[2]]
+  db_subnet_group_name        = aws_db_subnet_group.private_p.name
+  port                        = var.port == "" ? var.engine == "aurora-postgresql" ? "5432" : "3306" : var.port
+  database_name               = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.database_name
+  # Aurora global DB currently doesn't support master password management with AWS Secrets Manager
+  manage_master_user_password      = !var.setup_globaldb && var.manage_master_user_password ? var.manage_master_user_password : null
+  master_user_secret_kms_key_id    = !var.setup_globaldb && var.manage_master_user_password ? aws_kms_key.kms_p[0].arn : null
   master_username                  = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : var.username
-  master_password                  = var.setup_as_secondary || (var.snapshot_identifier != "") ? null : (var.password == "" ? random_password.master_password.result : var.password)
+  master_password                  = (var.setup_as_secondary || (var.snapshot_identifier != "")) || (!var.setup_globaldb && var.manage_master_user_password) ? null : (var.password == "" ? random_password.master_password.result : var.password)
   db_cluster_parameter_group_name  = aws_rds_cluster_parameter_group.aurora_cluster_parameter_group_p.id
   db_instance_parameter_group_name = var.allow_major_version_upgrade ? aws_db_parameter_group.aurora_db_parameter_group_p.id : null
   backup_retention_period          = var.backup_retention_period
@@ -169,20 +180,34 @@ resource "aws_rds_cluster" "primary" {
   #tfsec:ignore:aws-rds-encrypt-cluster-storage-data
   storage_encrypted               = var.storage_encrypted
   kms_key_id                      = var.storage_encrypted ? aws_kms_key.kms_p[0].arn : null
+  storage_type                    = var.storage_type
   apply_immediately               = true
   skip_final_snapshot             = var.skip_final_snapshot
   final_snapshot_identifier       = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.region}-${random_id.snapshot_id.hex}"
   snapshot_identifier             = var.snapshot_identifier != "" ? var.snapshot_identifier : null
   enabled_cloudwatch_logs_exports = local.logs_set
   tags                            = var.tags
+
+  dynamic "serverlessv2_scaling_configuration" {
+    for_each = var.instance_class == "db.serverless" ? [local.serverlessv2_scaling_configuration] : []
+
+    content {
+      max_capacity = serverlessv2_scaling_configuration.value.max_capacity
+      min_capacity = serverlessv2_scaling_configuration.value.min_capacity
+    }
+  }
+
   depends_on = [
     # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy
     # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destroy to work
-    #aws_rds_cluster_instance.secondary,
+    # aws_rds_cluster_instance.secondary,
   ]
+
   lifecycle {
     ignore_changes = [
       replication_source_identifier,
+      global_cluster_identifier,
+      snapshot_identifier,
       # Since Terraform doesn't allow to conditionally specify a lifecycle policy, this can't be done dynamically.
       # Uncomment the following line for Aurora Global Database to do major version upgrade as per https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_global_cluster
       # engine_version,
@@ -227,22 +252,35 @@ resource "aws_rds_cluster" "secondary" {
   preferred_backup_window          = var.preferred_backup_window
   source_region                    = var.storage_encrypted ? var.region : null
   kms_key_id                       = var.storage_encrypted ? aws_kms_key.kms_s[0].arn : null
+  storage_type                     = var.storage_type
   apply_immediately                = true
   skip_final_snapshot              = var.skip_final_snapshot
   final_snapshot_identifier        = var.skip_final_snapshot ? null : "${var.final_snapshot_identifier_prefix}-${var.identifier}-${var.sec_region}-${random_id.snapshot_id.hex}"
   enabled_cloudwatch_logs_exports  = local.logs_set
   tags                             = var.tags
+
+  dynamic "serverlessv2_scaling_configuration" {
+    for_each = var.instance_class == "db.serverless" ? [local.serverlessv2_scaling_configuration] : []
+
+    content {
+      max_capacity = serverlessv2_scaling_configuration.value.max_capacity
+      min_capacity = serverlessv2_scaling_configuration.value.min_capacity
+    }
+  }
+
   depends_on = [
     # When this Aurora cluster is setup as a secondary, setting up the dependency makes sure to delete this cluster 1st before deleting current primary Cluster during terraform destroy
     # Comment out the following line if this cluster has changed role to be the primary Aurora cluster because of a failover for terraform destroy to work
     aws_rds_cluster_instance.primary,
   ]
+
   lifecycle {
     ignore_changes = [
       replication_source_identifier,
+      global_cluster_identifier,
       # Since Terraform doesn't allow to conditionally specify a lifecycle policy, this can't be done dynamically.
       # Uncomment the following line for Aurora Global Database to do major version upgrade as per https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/rds_global_cluster
-      # engine_version,																											  
+      # engine_version,
     ]
   }
 }
@@ -410,7 +448,7 @@ resource "aws_db_event_subscription" "default_s" {
 resource "aws_cloudwatch_metric_alarm" "cpu_util_p" {
   count               = var.primary_instance_count
   provider            = aws.primary
-  alarm_name          = "CPU_Util-${element(split(",", join(",", aws_rds_cluster_instance.primary.*.id)), count.index)}"
+  alarm_name          = "CPU_Util-${element(split(",", join(",", aws_rds_cluster_instance.primary[*].id)), count.index)}"
   alarm_description   = "This metric monitors Aurora Instance CPU Utilization"
   metric_name         = "CPUUtilization"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -423,14 +461,14 @@ resource "aws_cloudwatch_metric_alarm" "cpu_util_p" {
   alarm_actions       = [aws_sns_topic.default_p.arn]
   namespace           = "AWS/RDS"
   dimensions = {
-    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
+    DBInstanceIdentifier = element(aws_rds_cluster_instance.primary[*].id, count.index)
   }
 }
 
 resource "aws_cloudwatch_metric_alarm" "free_local_storage_p" {
   count               = var.primary_instance_count
   provider            = aws.primary
-  alarm_name          = "Free_local_storage-${element(split(",", join(",", aws_rds_cluster_instance.primary.*.id)), count.index)}"
+  alarm_name          = "Free_local_storage-${element(split(",", join(",", aws_rds_cluster_instance.primary[*].id)), count.index)}"
   alarm_description   = "This metric monitors Aurora Local Storage Utilization"
   metric_name         = "FreeLocalStorage"
   comparison_operator = "LessThanOrEqualToThreshold"
@@ -443,14 +481,14 @@ resource "aws_cloudwatch_metric_alarm" "free_local_storage_p" {
   alarm_actions       = [aws_sns_topic.default_p.arn]
   namespace           = "AWS/RDS"
   dimensions = {
-    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
+    DBInstanceIdentifier = element(aws_rds_cluster_instance.primary[*].id, count.index)
   }
 }
 
 resource "aws_cloudwatch_metric_alarm" "free_random_access_memory_p" {
   count               = var.primary_instance_count
   provider            = aws.primary
-  alarm_name          = "FreeableMemory-${element(split(",", join(",", aws_rds_cluster_instance.primary.*.id)), count.index)}"
+  alarm_name          = "FreeableMemory-${element(split(",", join(",", aws_rds_cluster_instance.primary[*].id)), count.index)}"
   alarm_description   = "This metric monitors Aurora Instance Random Access Memory Utilization"
   metric_name         = "FreeableMemory"
   comparison_operator = "LessThanOrEqualToThreshold"
@@ -463,7 +501,7 @@ resource "aws_cloudwatch_metric_alarm" "free_random_access_memory_p" {
   alarm_actions       = [aws_sns_topic.default_p.arn]
   namespace           = "AWS/RDS"
   dimensions = {
-    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.primary.*.id, count.index)}"
+    DBInstanceIdentifier = element(aws_rds_cluster_instance.primary[*].id, count.index)
   }
 }
 
@@ -483,7 +521,7 @@ resource "aws_cloudwatch_metric_alarm" "pg_max_used_tx_ids_p" {
   alarm_actions       = [aws_sns_topic.default_p.arn]
   namespace           = "AWS/RDS"
   dimensions = {
-    DBClusterIdentifier = "${aws_rds_cluster.primary.id}"
+    DBClusterIdentifier = aws_rds_cluster.primary.id
     Role                = "WRITER"
   }
 }
@@ -491,7 +529,7 @@ resource "aws_cloudwatch_metric_alarm" "pg_max_used_tx_ids_p" {
 resource "aws_cloudwatch_metric_alarm" "cpu_util_s" {
   count               = var.setup_globaldb ? var.secondary_instance_count : 0
   provider            = aws.secondary
-  alarm_name          = "CPU_Util-${element(split(",", join(",", aws_rds_cluster_instance.secondary.*.id)), count.index)}"
+  alarm_name          = "CPU_Util-${element(split(",", join(",", aws_rds_cluster_instance.secondary[*].id)), count.index)}"
   alarm_description   = "This metric monitors Aurora Instance CPU Utilization"
   metric_name         = "CPUUtilization"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -504,14 +542,14 @@ resource "aws_cloudwatch_metric_alarm" "cpu_util_s" {
   alarm_actions       = [aws_sns_topic.default_s[0].arn]
   namespace           = "AWS/RDS"
   dimensions = {
-    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
+    DBInstanceIdentifier = element(aws_rds_cluster_instance.secondary[*].id, count.index)
   }
 }
 
 resource "aws_cloudwatch_metric_alarm" "free_local_storage_s" {
   count               = var.setup_globaldb ? var.secondary_instance_count : 0
   provider            = aws.secondary
-  alarm_name          = "Free_local_storage-${element(split(",", join(",", aws_rds_cluster_instance.secondary.*.id)), count.index)}"
+  alarm_name          = "Free_local_storage-${element(split(",", join(",", aws_rds_cluster_instance.secondary[*].id)), count.index)}"
   alarm_description   = "This metric monitors Aurora Local Storage Utilization"
   metric_name         = "FreeLocalStorage"
   comparison_operator = "LessThanOrEqualToThreshold"
@@ -524,14 +562,14 @@ resource "aws_cloudwatch_metric_alarm" "free_local_storage_s" {
   alarm_actions       = [aws_sns_topic.default_s[0].arn]
   namespace           = "AWS/RDS"
   dimensions = {
-    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
+    DBInstanceIdentifier = element(aws_rds_cluster_instance.secondary[*].id, count.index)
   }
 }
 
 resource "aws_cloudwatch_metric_alarm" "free_random_access_memory_s" {
   count               = var.setup_globaldb ? var.secondary_instance_count : 0
   provider            = aws.secondary
-  alarm_name          = "FreeableMemory-${element(split(",", join(",", aws_rds_cluster_instance.secondary.*.id)), count.index)}"
+  alarm_name          = "FreeableMemory-${element(split(",", join(",", aws_rds_cluster_instance.secondary[*].id)), count.index)}"
   alarm_description   = "This metric monitors Aurora Instance Random Access Memory Utilization"
   metric_name         = "FreeableMemory"
   comparison_operator = "LessThanOrEqualToThreshold"
@@ -544,7 +582,7 @@ resource "aws_cloudwatch_metric_alarm" "free_random_access_memory_s" {
   alarm_actions       = [aws_sns_topic.default_s[0].arn]
   namespace           = "AWS/RDS"
   dimensions = {
-    DBInstanceIdentifier = "${element(aws_rds_cluster_instance.secondary.*.id, count.index)}"
+    DBInstanceIdentifier = element(aws_rds_cluster_instance.secondary[*].id, count.index)
   }
 }
 
@@ -564,7 +602,7 @@ resource "aws_cloudwatch_metric_alarm" "pg_max_used_tx_ids_s" {
   alarm_actions       = [aws_sns_topic.default_s[0].arn]
   namespace           = "AWS/RDS"
   dimensions = {
-    DBClusterIdentifier = "${aws_rds_cluster.secondary[0].id}"
+    DBClusterIdentifier = aws_rds_cluster.secondary[0].id
     Role                = "WRITER"
   }
 }

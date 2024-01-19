@@ -122,4 +122,9 @@ locals {
     var.enable_slowquery_log && (var.engine != "aurora-postgresql") ? "slowquery" : "",
     var.enable_postgresql_log && (var.engine == "aurora-postgresql") ? "postgresql" : "",
   ])
+
+  serverlessv2_scaling_configuration = {
+    max_capacity = var.serverless_v2_max_acu
+    min_capacity = var.serverless_v2_min_acu
+  }
 }   
